@@ -2,6 +2,7 @@ import { useAnimation, useVariable } from "../src/lib/animation"
 import { DrawText } from "../src/lib/animation/effect/draw-text"
 import { BEZIER_SMOOTH } from "../src/lib/animation/functions"
 import { Clip, ClipSequence } from "../src/lib/clip"
+import { Sound } from "../src/lib/sound/sound"
 import { seconds } from "../src/lib/frame"
 import { FillFrame } from "../src/lib/layout/fill-frame"
 import { Project, type ProjectSettings } from "../src/lib/project"
@@ -296,20 +297,29 @@ export const PROJECT = () => {
   return (
     <Project>
       <TimeLine>
+        <Clip label="EffectSound" duration={seconds(2)}>
+          <Sound
+            sound="assets/effect-sound.mp3"
+            volume={20}
+            fadeInFrames={seconds(1)}
+            fadeOutFrames={seconds(2)}
+          />
+        </Clip>
+
         <ClipSequence>
-          <Clip label="Intro">
+          <Clip label="Intro" duration={seconds(10)}>
             <IntroScene />
           </Clip>
-          <Clip label="Activities">
+          <Clip label="Activities" duration={seconds(10)}>
             <ActivitiesScene />
           </Clip>
-          <Clip label="Members">
+          <Clip label="Members" duration={seconds(10)}>
             <MembersScene />
           </Clip>
-          <Clip label="Benefits">
+          <Clip label="Benefits" duration={seconds(10)}>
             <BenefitsScene />
           </Clip>
-          <Clip label="Closing">
+          <Clip label="Closing" duration={seconds(10)}>
             <ClosingScene />
           </Clip>
         </ClipSequence>
