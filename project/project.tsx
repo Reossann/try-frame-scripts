@@ -72,7 +72,7 @@ return (
 };
 
 export const TypewriterScene = () => {
-  const textToDisplay = "一文字ずつ表示したい！";
+  const textToDisplay = "一文字ずつ表示したい";
   const characters = textToDisplay.split("");
 
   return (
@@ -80,7 +80,7 @@ export const TypewriterScene = () => {
       width: '100%', height: '100%',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       backgroundColor: '#1a1a1a',
-      fontSize: '80px', color: '#00d4ff', fontWeight: 'bold'
+      fontSize: '180px', color: '#00d4ff', fontWeight: 'bold'
     }}>
       <div style={{ display: 'flex' }}>
         {/* 文字の配列を展開し、先ほど作った1文字コンポーネントを並べる */}
