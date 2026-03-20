@@ -297,14 +297,14 @@ export const PROJECT = () => {
   return (
     <Project>
       <TimeLine>
-        <Clip label="EffectSound" duration={seconds(2)}>
-          <Sound
-            sound="assets/effect-sound.mp3"
-            volume={20}
-            fadeInFrames={seconds(1)}
-            fadeOutFrames={seconds(2)}
-          />
-        </Clip>
+        {Array.from({ length: 5 }, (_, i) => (
+          <Clip key={i} label={`EffectSound${i + 1}`} start={seconds(i * 0.3)} duration={seconds(0.4)}>
+            <Sound
+              sound="assets/軽いパンチ1.mp3"
+              volume={0.5}
+            />
+          </Clip>
+        ))}
 
         <ClipSequence>
           <Clip label="Intro" duration={seconds(10)}>
