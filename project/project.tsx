@@ -17,50 +17,36 @@ export const PROJECT_SETTINGS: ProjectSettings = {
 
 
 
-const HelloScene = () => {
-  const progress = useVariable(0)
-  const color = useVariable("#FFFFFF")
+const TypewriterText = ({ text, fontSize = "48px", color = "#ffffff", delay = 0 }: { text: string; fontSize?: string; color?: string; delay?: number }) => {
+  const progress = useVariable(0);
 
   useAnimation(async (context) => {
-    await context.parallel([
-      context.move(progress).to(1, seconds(3), BEZIER_SMOOTH),
-      context.move(color).to("#75a9bd", seconds(3), BEZIER_SMOOTH),
-    ])
-    await context.sleep(seconds(1))
-    await context.move(progress).to(0, seconds(3), BEZIER_SMOOTH)
-  }, [])
+    await context.sleep(seconds(delay));
+    await context.move(progress).to(1, seconds(text.length * 0.1), BEZIER_SMOOTH);
+  }, [text, delay]);
+
+  const visibleChars = Math.floor(progress.use() * text.length);
+  const displayText = text.slice(0, visibleChars);
 
   return (
-    <FillFrame style={{ alignItems: "center", justifyContent: "center" }}>
-      <DrawText
-        text="bay"
-        fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
-        strokeWidth={2}
-        progress={progress}
-        strokeColor={color.use()}
-        fillColor={color.use()}
-      />
-    </FillFrame>
-  )
-}
+    <div style={{ fontSize, color, fontFamily: "Noto Serif CJK JP", fontWeight: "bold", textAlign: "center", margin: "8px 0" }}>
+      {displayText}
+    </div>
+  );
+};
 
 const AnimatedCharacter = ({ char, delayIndex }: { char: string, delayIndex: number }) => {
-  // この文字専用の変数（1つの数値のみを保持）
   const opacity = useVariable(0);
   const positionY = useVariable(20);
 
   useAnimation(async (ctx) => {
-    // 順番（delayIndex）に応じて、動き出す前に少し待機する（時差を作る）
     await ctx.sleep(seconds(delayIndex * 0.1));
-
-    // アニメーションの指示
     const fade = ctx.move(opacity).to(1, seconds(0.3));
     const moveUp = ctx.move(positionY).to(0, seconds(0.3));
-    
-    // 同時に動かす場合は、Promise.allではなく ctx.parallel を使うのがFrameScript流です！
     await ctx.parallel([fade, moveUp]);
   },[]);
-return (
+
+  return (
     <span style={{
       opacity: opacity.use(),
       transform: `translateY(${positionY.use()}px)`,
@@ -97,69 +83,55 @@ export const TypewriterScene = () => {
   );
 };
 
-const EmphasisLineScene = () => {
-  const underlineProgress = useVariable(0);
-
-  useAnimation(async (context) => {
-    await context.sleep(seconds(1)); // テキスト表示後に待機
-    await context.move(underlineProgress).to(1, seconds(2), BEZIER_SMOOTH); // アンダーラインが左から右へアニメーション
-    await context.sleep(seconds(1)); // 完了後に待機
-  }, []);
-
-  return (
-    <FillFrame style={{ alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
-      <div style={{ position: "relative", fontSize: "120px", color: "#000000", fontWeight: "bold" }}>
-        <DrawText
-          text="たにし"
-          fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
-          fillColor="#000000"
-        />
-        {/* アンダーライン */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-10px",
-            left: "0",
-            height: "8px",
-            backgroundColor: "#ff0000",
-            width: `${underlineProgress.use() * 100}%`, // プログレスに応じて幅が変わる
-            transition: "width 0.1s ease-out", // スムーズなアニメーション
-          }}
-        />
-      </div>
-    </FillFrame>
-  );
-};
-
-// 新入生歓迎会動画のシーン
-
 const IntroScene = () => {
-  const opacity = useVariable(0);
-  const scale = useVariable(0.5);
+  const phase = useVariable(0);
 
   useAnimation(async (context) => {
-    await context.parallel([
-      context.move(opacity).to(1, seconds(2), BEZIER_SMOOTH),
-      context.move(scale).to(1, seconds(2), BEZIER_SMOOTH),
-    ]);
-    await context.sleep(seconds(8));
+    await context.sleep(seconds(0.5));
+
+    // 1: 序盤テキスト
+    await context.move(phase).to(1, seconds(0.1), BEZIER_SMOOTH);
+    await context.sleep(seconds(1));
+
+    // 2: 「情報」表示 + 効果音タイミング
+    await context.move(phase).to(2, seconds(0.01));
+    await context.sleep(seconds(1));
+
+    // 3: メイン文
+    await context.move(phase).to(3, seconds(0.01));
+    await context.sleep(seconds(1.3));
+
+    // 4: サークル名
+    await context.move(phase).to(4, seconds(0.01));
+    await context.sleep(seconds(1))
   }, []);
 
   return (
     <FillFrame style={{ alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a1a" }}>
-      <div style={{
-        opacity: opacity.use(),
-        transform: `scale(${scale.use()})`,
-        fontSize: "100px",
-        color: "#ffffff",
-        fontWeight: "bold",
-        textAlign: "center"
-      }}>
-        <DrawText
-          text="[サークル名] 新入生歓迎会"
-          fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
-          fillColor="#ffffff"
-        />
+      <div style={{ textAlign: "center", color: "#ffffff" }}>
+        {phase.use() >= 1 && (
+          <TypewriterText text="大学生に一番大事なもの。それは...." fontSize="48px" color="#ffffff" delay={0} />
+        )}
+
+        {phase.use() >= 2 && (
+          <div style={{ fontSize: "140px", fontWeight: "bold", margin: "12px 0", color: "#00ffea" }}>
+            {"情報".split("").map((char, index) => (
+              <AnimatedCharacter key={index} char={char} delayIndex={index} />
+            ))}
+          </div>
+        )}
+
+        {phase.use() >= 3 && (
+          <TypewriterText text="そんな情報を得ることができ、かつ自分のやりたいこともできる。それが、、、" fontSize="48px" color="#ffffff" delay={0} />
+        )}
+
+        {phase.use() >= 4 && (
+          <div style={{ fontSize: "88px", fontWeight: "bold", margin: "20px 0", color: "#00ffea" }}>
+            {"情報技術メディア研究会".split("").map((char, index) => (
+              <AnimatedCharacter key={index} char={char} delayIndex={index} />
+            ))}
+          </div>
+        )}
       </div>
     </FillFrame>
   );
@@ -297,17 +269,30 @@ export const PROJECT = () => {
   return (
     <Project>
       <TimeLine>
-        {Array.from({ length: 5 }, (_, i) => (
-          <Clip key={i} label={`EffectSound${i + 1}`} start={seconds(i * 0.3)} duration={seconds(0.4)}>
+        {Array.from({ length: 0 }, (_, i) => (
+          <Clip key={i} label={`EffectSound${i + 1}`} start={seconds(i * 0.3)} duration={seconds(0.3)}>
             <Sound
               sound="assets/軽いパンチ1.mp3"
-              volume={0.5}
+              volume={1}
             />
           </Clip>
         ))}
 
+        <Clip label="InfoSound" start={seconds(1.5)} duration={seconds(0.6)}>
+          <Sound
+            sound="assets/軽いパンチ1.mp3"
+            volume={1.5}
+          />
+        </Clip>
+        <Clip label="InfoSound" start={seconds(4)} duration={seconds(0.6)}>
+          <Sound
+            sound="assets/軽いパンチ1.mp3"
+            volume={1.5}
+          />
+        </Clip>
+
         <ClipSequence>
-          <Clip label="Intro" duration={seconds(10)}>
+          <Clip label="Intro" duration={seconds(8)}>
             <IntroScene />
           </Clip>
           <Clip label="Activities" duration={seconds(10)}>
