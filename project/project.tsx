@@ -96,6 +96,40 @@ export const TypewriterScene = () => {
   );
 };
 
+const EmphasisLineScene = () => {
+  const underlineProgress = useVariable(0);
+
+  useAnimation(async (context) => {
+    await context.sleep(seconds(1)); // テキスト表示後に待機
+    await context.move(underlineProgress).to(1, seconds(2), BEZIER_SMOOTH); // アンダーラインが左から右へアニメーション
+    await context.sleep(seconds(1)); // 完了後に待機
+  }, []);
+
+  return (
+    <FillFrame style={{ alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" }}>
+      <div style={{ position: "relative", fontSize: "120px", color: "#000000", fontWeight: "bold" }}>
+        <DrawText
+          text="たにし"
+          fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
+          fillColor="#000000"
+        />
+        {/* アンダーライン */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "-10px",
+            left: "0",
+            height: "8px",
+            backgroundColor: "#ff0000",
+            width: `${underlineProgress.use() * 100}%`, // プログレスに応じて幅が変わる
+            transition: "width 0.1s ease-out", // スムーズなアニメーション
+          }}
+        />
+      </div>
+    </FillFrame>
+  );
+};
+
 
 
 export const PROJECT = () => {
@@ -107,6 +141,9 @@ export const PROJECT = () => {
         </Clip>
         <Clip label="otamesi">
           <TypewriterScene />
+        </Clip>
+        <Clip label="Emphasis Line">
+          <EmphasisLineScene />
         </Clip>
       </TimeLine>
     </Project>
