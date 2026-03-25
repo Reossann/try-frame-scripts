@@ -60,7 +60,7 @@ export const PROJECT = () => {
           <Clip label="Intro4" duration={seconds(2)}>
             <Intro4Scene />
           </Clip>
-          <Clip label="Activities" duration={seconds(10)}>
+          <Clip label="Activities" duration={seconds(40)}>
             <ActivitiesScene />
           </Clip>
           <Clip label="Members" duration={seconds(10)}>
