@@ -2,7 +2,7 @@ import { useAnimation, useVariable } from "../src/lib/animation"
 import { BEZIER_SMOOTH } from "../src/lib/animation/functions"
 import { seconds } from "../src/lib/frame"
 import { FillFrame } from "../src/lib/layout/fill-frame"
-import { TypewriterText, AnimatedCharacter } from "./props"
+import { AnimatedCharacter } from "./props"
 
 export const Intro1Scene = () => {
   const timeOpacity = useVariable(0);
@@ -120,6 +120,23 @@ export const Intro2Scene = () => {
 };
 
 export const Intro3Scene = () => {
+  const firstOpacity = useVariable(0);
+  const secondOpacity = useVariable(0);
+  const secondScale = useVariable(1.2);
+
+  useAnimation(async (context) => {
+    await context.sleep(seconds(0.1));
+
+    await context.move(firstOpacity).to(1, seconds(0.36), BEZIER_SMOOTH);
+    await context.sleep(seconds(0.7));
+    await context.move(firstOpacity).to(0, seconds(0.24), BEZIER_SMOOTH);
+
+    await context.parallel([
+      context.move(secondOpacity).to(1, seconds(0.3), BEZIER_SMOOTH),
+      context.move(secondScale).to(1, seconds(0.42), BEZIER_SMOOTH),
+    ]);
+  }, []);
+
   return (
     <FillFrame
       style={{
@@ -128,13 +145,47 @@ export const Intro3Scene = () => {
         background: "radial-gradient(circle at 70% 25%, #3a2c45 0%, #1d1326 54%, #0a0a11 100%)",
       }}
     >
-      <TypewriterText
-        text="最速で学び、最速で試す。答えは、ここにある。"
-        fontSize="64px"
-        color="#ffffff"
-        delay={0}
-        textAlign="center"
-      />
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "Noto Serif CJK JP",
+          fontWeight: "bold",
+          color: "#ffffff",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            opacity: firstOpacity.use(),
+            fontSize: "64px",
+            textAlign: "center",
+            letterSpacing: "0.01em",
+            textShadow: "0 4px 18px rgba(0, 0, 0, 0.38)",
+          }}
+        >
+          必要なのは、情報を得る環境だ。
+        </div>
+
+        <div
+          style={{
+            position: "absolute",
+            opacity: secondOpacity.use(),
+            transform: `scale(${secondScale.use()})`,
+            fontSize: "148px",
+            lineHeight: 1.05,
+            textAlign: "center",
+            color: "#ffe7b0",
+            textShadow: "0 0 26px rgba(255, 216, 128, 0.48), 0 8px 20px rgba(0, 0, 0, 0.44)",
+          }}
+        >
+          その場こそが
+        </div>
+      </div>
     </FillFrame>
   );
 };
