@@ -24,7 +24,7 @@ export const ActivitiesScene = () => {
           text="活動実績と活動内容"
           fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
           fillColor="#ffffff"
-          durationFrames={80}
+          durationFrames={85}
           delayFrames={0}
         />
         <ul style={{ listStyle: "none", padding: 0, marginTop: "20px" }}>
