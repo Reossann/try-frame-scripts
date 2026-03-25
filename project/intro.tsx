@@ -190,20 +190,55 @@ export const Intro3Scene = () => {
   );
 };
 
+const zoomInKeyframes = `
+@keyframes zoomInMajestic {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+`;
+
 export const Intro4Scene = () => {
   return (
     <FillFrame
       style={{
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(160deg, #1a240e 0%, #11190f 56%, #080c07 100%)",
+        background: "linear-gradient(135deg, #2a1f47 0%, #1a1a3e 38%, #0f1a2e 70%, #050810 100%)",
       }}
     >
-      <div style={{ fontSize: "102px", fontWeight: "bold", color: "#94ff8f", textShadow: "0 0 22px rgba(120, 255, 124, 0.45)" }}>
+      <style>{zoomInKeyframes}</style>
+      <div
+        style={{
+          fontSize: "102px",
+          fontWeight: "bold",
+          color: "#f5d547",
+          textShadow: "0 0 32px rgba(245, 213, 71, 0.52), 0 12px 28px rgba(0, 0, 0, 0.58), inset 0 -1px 2px rgba(0, 0, 0, 0.3)",
+          letterSpacing: "0.04em",
+        }}
+      >
         {"情報技術メディア研究会".split("").map((char, index) => (
-          <AnimatedCharacter key={index} char={char} delayIndex={index} />
+          <span
+            key={index}
+            style={{
+              display: "inline-block",
+              animation: `zoomInMajestic 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index * 0.12}s 1 forwards`,
+              width: char === " " ? "20px" : "auto",
+            }}
+          >
+            {char}
+          </span>
         ))}
       </div>
     </FillFrame>
   );
 };
+
