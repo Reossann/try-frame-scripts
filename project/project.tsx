@@ -16,48 +16,44 @@ export const PROJECT_SETTINGS: ProjectSettings = {
   fps: 60,
 }
 
+const INTRO1_DURATION = 2.4
+const INTRO2_DURATION = 1.4
+const INTRO3_DURATION = 2.8
+const INTRO4_DURATION = 2.2
+
+const INTRO2_START = INTRO1_DURATION
+const INTRO4_START = INTRO1_DURATION + INTRO2_DURATION + INTRO3_DURATION
+
 
 
 export const PROJECT = () => {
   return (
     <Project>
       <TimeLine>
-        <Clip label="TextSound1" start={seconds(0.6)} duration={seconds(0.4)}>
+        <Clip label="Intro2TransitionSound" start={seconds(INTRO2_START)} duration={seconds(0.45)}>
           <Sound
             sound="assets/軽いパンチ1.mp3"
-            volume={1.2}
+            volume={1.35}
           />
         </Clip>
-        <Clip label="TextSound2" start={seconds(2.6)} duration={seconds(0.4)}>
+        <Clip label="Intro4TransitionSound" start={seconds(INTRO4_START)} duration={seconds(0.45)}>
           <Sound
             sound="assets/軽いパンチ1.mp3"
-            volume={1.2}
-          />
-        </Clip>
-        <Clip label="TextSound3" start={seconds(4.6)} duration={seconds(0.4)}>
-          <Sound
-            sound="assets/軽いパンチ1.mp3"
-            volume={1.2}
-          />
-        </Clip>
-        <Clip label="TextSound4" start={seconds(6.6)} duration={seconds(0.4)}>
-          <Sound
-            sound="assets/軽いパンチ1.mp3"
-            volume={1.2}
+            volume={1.35}
           />
         </Clip>
 
         <ClipSequence>
-          <Clip label="Intro1" duration={seconds(2)}>
+          <Clip label="Intro1" duration={seconds(INTRO1_DURATION)}>
             <Intro1Scene />
           </Clip>
-          <Clip label="Intro2" duration={seconds(2)}>
+          <Clip label="Intro2" duration={seconds(INTRO2_DURATION)}>
             <Intro2Scene />
           </Clip>
-          <Clip label="Intro3" duration={seconds(2)}>
+          <Clip label="Intro3" duration={seconds(INTRO3_DURATION)}>
             <Intro3Scene />
           </Clip>
-          <Clip label="Intro4" duration={seconds(2)}>
+          <Clip label="Intro4" duration={seconds(INTRO4_DURATION)}>
             <Intro4Scene />
           </Clip>
           <Clip label="Activities" duration={seconds(40)}>

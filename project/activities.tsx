@@ -37,9 +37,27 @@ export const ActivitiesScene = () => {
       style={{
         alignItems: "flex-start",
         justifyContent: "flex-start",
+        position: "relative",
         background: "radial-gradient(circle at top, #3b3b3b 0%, #202020 55%, #161616 100%)",
       }}
     >
+      <img
+        src="assets/Gemini_Generated_Image_xncn7xncn7xncn7x.png"
+        alt="activities visual"
+        style={{
+          position: "absolute",
+          top: "0px",
+          right: "0px",
+          width: "320px",
+          height: "320px",
+          objectFit: "contain",
+          backgroundColor: "rgba(0, 0, 0, 0.22)",
+          borderRadius: "16px",
+          boxShadow: "0 16px 34px rgba(0, 0, 0, 0.42)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          pointerEvents: "none",
+        }}
+      />
       <div
         style={{
           width: "560px",

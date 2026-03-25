@@ -1,18 +1,116 @@
+import { useAnimation, useVariable } from "../src/lib/animation"
+import { BEZIER_SMOOTH } from "../src/lib/animation/functions"
+import { seconds } from "../src/lib/frame"
 import { FillFrame } from "../src/lib/layout/fill-frame"
 import { TypewriterText, AnimatedCharacter } from "./props"
 
 export const Intro1Scene = () => {
+  const timeOpacity = useVariable(0);
+  const studyOpacity = useVariable(0);
+  const noOpacity = useVariable(0);
+  const noScale = useVariable(1.28);
+
+  useAnimation(async (context) => {
+    await context.sleep(seconds(0.2));
+
+    await context.move(timeOpacity).to(1, seconds(0.25), BEZIER_SMOOTH);
+    await context.sleep(seconds(0.22));
+    await context.move(timeOpacity).to(0, seconds(0.2), BEZIER_SMOOTH);
+
+    await context.move(studyOpacity).to(1, seconds(0.25), BEZIER_SMOOTH);
+    await context.sleep(seconds(0.22));
+    await context.move(studyOpacity).to(0, seconds(0.2), BEZIER_SMOOTH);
+
+    await context.parallel([
+      context.move(noOpacity).to(1, seconds(0.22), BEZIER_SMOOTH),
+      context.move(noScale).to(1, seconds(0.34), BEZIER_SMOOTH),
+    ]);
+  }, []);
+
   return (
-    <FillFrame style={{ alignItems: "center", justifyContent: "flex-start", backgroundColor: "#1a1a1a", paddingLeft: "40px" }}>
-      <TypewriterText text="大学生に一番大事なもの。それは...." fontSize="48px" color="#ffffff" delay={0} textAlign="left" writingMode="vertical-rl" />
+    <FillFrame
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        background: "radial-gradient(circle at 24% 18%, #313644 0%, #181a24 50%, #0a0c12 100%)",
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          color: "#ffffff",
+          fontFamily: "Noto Serif CJK JP",
+          fontWeight: "bold",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "126px",
+            textAlign: "center",
+            letterSpacing: "0.02em",
+            lineHeight: 1.08,
+            textShadow: "0 8px 24px rgba(0, 0, 0, 0.45)",
+          }}
+        >
+          大学生活に必要なものは？
+        </div>
+
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "180px",
+            marginTop: "34px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "96px",
+            color: "#cfe8ff",
+            textShadow: "0 4px 18px rgba(46, 146, 255, 0.35)",
+          }}
+        >
+          <div style={{ position: "absolute", opacity: timeOpacity.use() }}>時間？</div>
+          <div style={{ position: "absolute", opacity: studyOpacity.use() }}>勉強？</div>
+        </div>
+
+        <div
+          style={{
+            position: "absolute",
+            opacity: noOpacity.use(),
+            transform: `scale(${noScale.use()})`,
+            fontSize: "236px",
+            color: "#ff4c4c",
+            lineHeight: 1,
+            textShadow: "0 0 28px rgba(255, 64, 64, 0.68), 0 8px 20px rgba(0, 0, 0, 0.45)",
+            pointerEvents: "none",
+          }}
+        >
+          否！！
+        </div>
+      </div>
     </FillFrame>
   );
 };
 
 export const Intro2Scene = () => {
   return (
-    <FillFrame style={{ alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a1a" }}>
-      <div style={{ fontSize: "140px", fontWeight: "bold", color: "#00ffea" }}>
+    <FillFrame
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(145deg, #09131a 0%, #0f1f28 60%, #060a0d 100%)",
+      }}
+    >
+      <div style={{ position: "absolute", top: "94px", color: "rgba(226, 255, 255, 0.82)", letterSpacing: "0.35em", fontSize: "28px" }}>
+        KEYWORD
+      </div>
+      <div style={{ fontSize: "170px", fontWeight: "bold", color: "#68fff3", textShadow: "0 0 26px rgba(56, 255, 240, 0.5)" }}>
         {"情報".split("").map((char, index) => (
           <AnimatedCharacter key={index} char={char} delayIndex={index} />
         ))}
@@ -23,16 +121,34 @@ export const Intro2Scene = () => {
 
 export const Intro3Scene = () => {
   return (
-    <FillFrame style={{ alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a1a" }}>
-      <TypewriterText text="そんな情報を得ることができ、かつ自分のやりたいこともできる。それが、、、" fontSize="48px" color="#ffffff" delay={0} textAlign="center" />
+    <FillFrame
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        background: "radial-gradient(circle at 70% 25%, #3a2c45 0%, #1d1326 54%, #0a0a11 100%)",
+      }}
+    >
+      <TypewriterText
+        text="最速で学び、最速で試す。答えは、ここにある。"
+        fontSize="64px"
+        color="#ffffff"
+        delay={0}
+        textAlign="center"
+      />
     </FillFrame>
   );
 };
 
 export const Intro4Scene = () => {
   return (
-    <FillFrame style={{ alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a1a" }}>
-      <div style={{ fontSize: "88px", fontWeight: "bold", color: "#00ffea" }}>
+    <FillFrame
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(160deg, #1a240e 0%, #11190f 56%, #080c07 100%)",
+      }}
+    >
+      <div style={{ fontSize: "102px", fontWeight: "bold", color: "#94ff8f", textShadow: "0 0 22px rgba(120, 255, 124, 0.45)" }}>
         {"情報技術メディア研究会".split("").map((char, index) => (
           <AnimatedCharacter key={index} char={char} delayIndex={index} />
         ))}
