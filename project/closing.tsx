@@ -23,7 +23,7 @@ export const ClosingScene = () => {
         textAlign: "center"
       }}>
         <DrawText
-          text="一緒にプログラミングを楽しみましょう！"
+          text="Welcome to my circle"
           fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
           fillColor="#ffffff"
         />

@@ -8,12 +8,13 @@ export const ActivitiesScene = () => {
   const progress = useVariable(0);
   const titleScale = useVariable(1);
   const items = ["ハッカソン", "ゼミ", "テスト勉強会", "プロジェクト", "外部イベント"];
-  const titleDrawFrames = 85;
-  const sceneDuration = seconds(40);
-  const revealDuration = seconds(4);
-  const detailRevealStart = titleDrawFrames / sceneDuration;
-  const focusStart = 0.24;
-  const focusPerItem = seconds(6) / sceneDuration;
+  const titleDrawFrames = 42;
+  const sceneDuration = seconds(50);
+  const firstItemDelay = seconds(0.2);
+  const itemInterval = seconds(1);
+  const itemFadeDuration = seconds(0.2);
+  const emphasisStartDelay = seconds(0.4);
+  const emphasisItemDuration = seconds(10);
 
   useAnimation(async (context) => {
     await context.move(progress).to(1, sceneDuration, BEZIER_SMOOTH);
@@ -25,10 +26,13 @@ export const ActivitiesScene = () => {
   }, []);
 
   const currentProgress = progress.use();
+  const elapsedSeconds = currentProgress * sceneDuration;
+  const allItemsShownAt = firstItemDelay + (items.length - 1) * itemInterval + itemFadeDuration;
+  const emphasisStart = allItemsShownAt + emphasisStartDelay;
 
   const revealAt = (index: number) => {
-    const start = detailRevealStart + index * 0.03;
-    const value = (currentProgress - start) * (sceneDuration / revealDuration);
+    const appearAt = firstItemDelay + index * itemInterval;
+    const value = (elapsedSeconds - appearAt) / itemFadeDuration;
     return Math.max(0, Math.min(1, value));
   };
 
@@ -92,24 +96,23 @@ export const ActivitiesScene = () => {
           {items.map((item, index) => {
             const opacity = revealAt(index);
             const translateX = (1 - opacity) * 28;
-            const slotProgress = (currentProgress - focusStart) / focusPerItem;
-            const localSlot = slotProgress - index;
-            const focusRamp = 0.12;
+            const emphasisLocal = (elapsedSeconds - emphasisStart) / emphasisItemDuration - index;
+            const emphasisRamp = 0.22;
 
-            let focusLevel = 0;
-            if (localSlot >= 0 && localSlot < 1) {
-              if (localSlot < focusRamp) {
-                focusLevel = localSlot / focusRamp;
-              } else if (localSlot > 1 - focusRamp) {
-                focusLevel = (1 - localSlot) / focusRamp;
+            let emphasisLevel = 0;
+            if (emphasisLocal >= 0 && emphasisLocal < 1) {
+              if (emphasisLocal < emphasisRamp) {
+                emphasisLevel = emphasisLocal / emphasisRamp;
+              } else if (emphasisLocal > 1 - emphasisRamp) {
+                emphasisLevel = (1 - emphasisLocal) / emphasisRamp;
               } else {
-                focusLevel = 1;
+                emphasisLevel = 1;
               }
             }
 
-            const itemScale = 1 + focusLevel * 0.5;
-            const itemShadow = 10 + focusLevel * 18;
-            const itemGlow = 0.08 + focusLevel * 0.18;
+            const itemShadow = 10 + emphasisLevel * 8;
+            const itemGlow = 0.08 + emphasisLevel * 0.14;
+            const itemScale = 1 + emphasisLevel * 0.16;
 
             return (
               <li
