@@ -1,50 +1,86 @@
 import { useAnimation, useVariable } from "../src/lib/animation"
 import { DrawText } from "../src/lib/animation/effect/draw-text"
-import { BEZIER_SMOOTH } from "../src/lib/animation/functions"
 import { seconds } from "../src/lib/frame"
 import { FillFrame } from "../src/lib/layout/fill-frame"
 
 export const ActivitiesScene = () => {
   const progress = useVariable(0);
-  const titleScale = useVariable(1);
   const items = ["ハッカソン", "ゼミ", "テスト勉強会", "プロジェクト", "外部イベント"];
+  const itemDescriptions = [
+    "ハッカソンの説明",
+    "ゼミの説明",
+    "テスト勉強会の説明",
+    "プロジェクトの説明",
+    "外部イベントの説明",
+  ];
   const titleDrawFrames = 42;
-  const sceneDuration = seconds(50);
-  const firstItemDelay = seconds(0.2);
+  const sceneDuration = seconds(40.6);
+  const firstItemDelay = seconds(1);
   const itemInterval = seconds(1);
   const itemFadeDuration = seconds(0.2);
   const emphasisStartDelay = seconds(0.4);
-  const emphasisItemDuration = seconds(10);
+  const emphasisFadeInDuration = seconds(1);
+  const emphasisHoldDuration = seconds(5);
+  const emphasisFadeOutDuration = seconds(1);
+  const emphasisItemDuration = emphasisFadeInDuration + emphasisHoldDuration + emphasisFadeOutDuration;
 
   useAnimation(async (context) => {
-    await context.move(progress).to(1, sceneDuration, BEZIER_SMOOTH);
-  }, []);
-
-  useAnimation(async (context) => {
-    await context.move(titleScale).to(1.12, seconds(0.35), BEZIER_SMOOTH);
-    await context.move(titleScale).to(1, seconds(0.35), BEZIER_SMOOTH);
+    await context.move(progress).to(1, sceneDuration);
   }, []);
 
   const currentProgress = progress.use();
-  const elapsedSeconds = currentProgress * sceneDuration;
+  const elapsedFrames = currentProgress * sceneDuration;
   const allItemsShownAt = firstItemDelay + (items.length - 1) * itemInterval + itemFadeDuration;
   const emphasisStart = allItemsShownAt + emphasisStartDelay;
 
   const revealAt = (index: number) => {
     const appearAt = firstItemDelay + index * itemInterval;
-    const value = (elapsedSeconds - appearAt) / itemFadeDuration;
+    const value = (elapsedFrames - appearAt) / itemFadeDuration;
     return Math.max(0, Math.min(1, value));
   };
 
+  const getEmphasisLevel = (index: number) => {
+    const emphasisElapsed = elapsedFrames - (emphasisStart + index * emphasisItemDuration);
+    if (emphasisElapsed < 0 || emphasisElapsed >= emphasisItemDuration) {
+      return 0;
+    }
+    if (emphasisElapsed < emphasisFadeInDuration) {
+      return emphasisElapsed / emphasisFadeInDuration;
+    }
+    if (emphasisElapsed < emphasisFadeInDuration + emphasisHoldDuration) {
+      return 1;
+    }
+    const fadeOutElapsed = emphasisElapsed - (emphasisFadeInDuration + emphasisHoldDuration);
+    return 1 - fadeOutElapsed / emphasisFadeOutDuration;
+  };
+
+  const emphasisLevels = items.map((_, index) => getEmphasisLevel(index));
+  let activeDescriptionIndex = -1;
+  let activeDescriptionOpacity = 0;
+  for (let index = 0; index < emphasisLevels.length; index += 1) {
+    if (emphasisLevels[index] > activeDescriptionOpacity) {
+      activeDescriptionOpacity = emphasisLevels[index];
+      activeDescriptionIndex = index;
+    }
+  }
+  const activeDescriptionText = activeDescriptionIndex >= 0 ? itemDescriptions[activeDescriptionIndex] : "";
+
   return (
-    <FillFrame
-      style={{
-        alignItems: "flex-start",
-        justifyContent: "flex-start",
-        position: "relative",
-        background: "radial-gradient(circle at top, #3b3b3b 0%, #202020 55%, #161616 100%)",
-      }}
-    >
+    <>
+      <FillFrame
+        style={{
+          top: "0px",
+          left: "0px",
+          right: "0px",
+          bottom: "20%",
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
+          position: "relative",
+          margin: "0",
+          padding: "0",
+          background: "radial-gradient(circle at top, #3b3b3b 0%, #202020 55%, #161616 100%)",
+        }}
+      >
       <img
         src="assets/Gemini_Generated_Image_xncn7xncn7xncn7x.png"
         alt="activities visual"
@@ -65,12 +101,11 @@ export const ActivitiesScene = () => {
       <div
         style={{
           width: "560px",
-          marginTop: "86px",
+          marginTop: "0px",
           marginLeft: "24px",
           color: "#ffffff",
           fontWeight: "bold",
           textAlign: "left",
-          transform: `scale(${titleScale.use()})`,
         }}
       >
         <DrawText
@@ -96,19 +131,7 @@ export const ActivitiesScene = () => {
           {items.map((item, index) => {
             const opacity = revealAt(index);
             const translateX = (1 - opacity) * 28;
-            const emphasisLocal = (elapsedSeconds - emphasisStart) / emphasisItemDuration - index;
-            const emphasisRamp = 0.22;
-
-            let emphasisLevel = 0;
-            if (emphasisLocal >= 0 && emphasisLocal < 1) {
-              if (emphasisLocal < emphasisRamp) {
-                emphasisLevel = emphasisLocal / emphasisRamp;
-              } else if (emphasisLocal > 1 - emphasisRamp) {
-                emphasisLevel = (1 - emphasisLocal) / emphasisRamp;
-              } else {
-                emphasisLevel = 1;
-              }
-            }
+            const emphasisLevel = getEmphasisLevel(index);
 
             const itemShadow = 10 + emphasisLevel * 8;
             const itemGlow = 0.08 + emphasisLevel * 0.14;
@@ -151,6 +174,54 @@ export const ActivitiesScene = () => {
           })}
         </ul>
       </div>
-    </FillFrame>
+      <div
+        style={{
+          position: "absolute",
+          left: "760px",
+          top: "470px",
+          width: "760px",
+          opacity: activeDescriptionOpacity,
+          transform: `translateY(${(1 - activeDescriptionOpacity) * 10}px)`,
+          fontSize: "48px",
+          fontWeight: "bold",
+          lineHeight: 1.3,
+          letterSpacing: "0.01em",
+          color: "#d7ecff",
+          textShadow: "0 4px 14px rgba(0, 0, 0, 0.35)",
+          transition: "opacity 120ms linear, transform 120ms linear",
+          pointerEvents: "none",
+        }}
+      >
+        {activeDescriptionText}
+      </div>
+      </FillFrame>
+      <div
+        style={{
+          position: "absolute",
+          left: "0px",
+          right: "0px",
+          bottom: "0px",
+          height: "20%",
+          display: "flex",
+          alignItems: "center",
+          margin: "0",
+          padding: "0 40px",
+          boxSizing: "border-box",
+          background: "rgba(7, 12, 20, 0.68)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.2)",
+          opacity: 1,
+          fontSize: "30px",
+          fontWeight: "bold",
+          lineHeight: 1.3,
+          letterSpacing: "0.01em",
+          color: "#e3f0ff",
+          textShadow: "0 4px 14px rgba(0, 0, 0, 0.35)",
+          pointerEvents: "none",
+          zIndex: 10,
+        }}
+      >
+        （音声の文字起こしをここに表示）
+      </div>
+    </>
   );
 };

@@ -8,15 +8,20 @@ export const BenefitsScene = () => {
   const progress = useVariable(0);
   const titleScale = useVariable(1);
   const items = ["人脈の拡大", "最新情報の共有", "実践プロジェクト参加"];
-  const titleDrawFrames = 85;
-  const sceneDuration = seconds(10);
-  const revealDuration = seconds(2.4);
-  const detailRevealStart = titleDrawFrames / sceneDuration;
-  const focusStart = 0.34;
-  const focusPerItem = (1 - focusStart) / items.length;
+  const itemDescriptions = ["人脈の拡大の説明", "最新情報の共有の説明", "実践プロジェクト参加の説明"];
+  const titleDrawFrames = 42;
+  const sceneDuration = seconds(26.6);
+  const firstItemDelay = seconds(1);
+  const itemInterval = seconds(1);
+  const itemFadeDuration = seconds(0.2);
+  const emphasisStartDelay = seconds(0.4);
+  const emphasisFadeInDuration = seconds(1);
+  const emphasisHoldDuration = seconds(5);
+  const emphasisFadeOutDuration = seconds(1);
+  const emphasisItemDuration = emphasisFadeInDuration + emphasisHoldDuration + emphasisFadeOutDuration;
 
   useAnimation(async (context) => {
-    await context.move(progress).to(1, sceneDuration, BEZIER_SMOOTH);
+    await context.move(progress).to(1, sceneDuration);
   }, []);
 
   useAnimation(async (context) => {
@@ -25,12 +30,41 @@ export const BenefitsScene = () => {
   }, []);
 
   const currentProgress = progress.use();
+  const elapsedFrames = currentProgress * sceneDuration;
+  const allItemsShownAt = firstItemDelay + (items.length - 1) * itemInterval + itemFadeDuration;
+  const emphasisStart = allItemsShownAt + emphasisStartDelay;
 
   const revealAt = (index: number) => {
-    const start = detailRevealStart + index * 0.05;
-    const value = (currentProgress - start) * (sceneDuration / revealDuration);
+    const appearAt = firstItemDelay + index * itemInterval;
+    const value = (elapsedFrames - appearAt) / itemFadeDuration;
     return Math.max(0, Math.min(1, value));
   };
+
+  const getEmphasisLevel = (index: number) => {
+    const emphasisElapsed = elapsedFrames - (emphasisStart + index * emphasisItemDuration);
+    if (emphasisElapsed < 0 || emphasisElapsed >= emphasisItemDuration) {
+      return 0;
+    }
+    if (emphasisElapsed < emphasisFadeInDuration) {
+      return emphasisElapsed / emphasisFadeInDuration;
+    }
+    if (emphasisElapsed < emphasisFadeInDuration + emphasisHoldDuration) {
+      return 1;
+    }
+    const fadeOutElapsed = emphasisElapsed - (emphasisFadeInDuration + emphasisHoldDuration);
+    return 1 - fadeOutElapsed / emphasisFadeOutDuration;
+  };
+
+  const emphasisLevels = items.map((_, index) => getEmphasisLevel(index));
+  let activeDescriptionIndex = -1;
+  let activeDescriptionOpacity = 0;
+  for (let index = 0; index < emphasisLevels.length; index += 1) {
+    if (emphasisLevels[index] > activeDescriptionOpacity) {
+      activeDescriptionOpacity = emphasisLevels[index];
+      activeDescriptionIndex = index;
+    }
+  }
+  const activeDescriptionText = activeDescriptionIndex >= 0 ? itemDescriptions[activeDescriptionIndex] : "";
 
   return (
     <FillFrame
@@ -60,7 +94,7 @@ export const BenefitsScene = () => {
       />
       <div
         style={{
-          width: "620px",
+          width: "560px",
           marginTop: "86px",
           marginLeft: "24px",
           color: "#ffffff",
@@ -82,7 +116,7 @@ export const BenefitsScene = () => {
             padding: "10px 0",
             marginTop: "32px",
             borderTop: "1px solid rgba(255, 255, 255, 0.24)",
-            width: "540px",
+            width: "470px",
             background: "linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))",
             borderRadius: "14px",
             overflow: "visible",
@@ -92,24 +126,12 @@ export const BenefitsScene = () => {
           {items.map((item, index) => {
             const opacity = revealAt(index);
             const translateX = (1 - opacity) * 28;
-            const slotProgress = (currentProgress - focusStart) / focusPerItem;
-            const localSlot = slotProgress - index;
-            const focusRamp = 0.14;
+            const emphasisLevel = getEmphasisLevel(index);
+            const itemFontSize = index === items.length - 1 ? "39px" : "44px";
 
-            let focusLevel = 0;
-            if (localSlot >= 0 && localSlot < 1) {
-              if (localSlot < focusRamp) {
-                focusLevel = localSlot / focusRamp;
-              } else if (localSlot > 1 - focusRamp) {
-                focusLevel = (1 - localSlot) / focusRamp;
-              } else {
-                focusLevel = 1;
-              }
-            }
-
-            const itemScale = 1 + focusLevel * 0.32;
-            const itemShadow = 10 + focusLevel * 18;
-            const itemGlow = 0.08 + focusLevel * 0.18;
+            const itemScale = 1 + emphasisLevel * 0.16;
+            const itemShadow = 10 + emphasisLevel * 8;
+            const itemGlow = 0.08 + emphasisLevel * 0.14;
 
             return (
               <li
@@ -132,14 +154,13 @@ export const BenefitsScene = () => {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    fontSize: "38px",
+                    fontSize: itemFontSize,
                     lineHeight: 1.3,
                     letterSpacing: "0.015em",
                     textShadow: `0 2px ${itemShadow}px rgba(0, 0, 0, 0.28)`,
                     transform: `scale(${itemScale})`,
                     transformOrigin: "left center",
                     width: "100%",
-                    whiteSpace: "nowrap",
                   }}
                 >
                   {item}
@@ -148,6 +169,26 @@ export const BenefitsScene = () => {
             );
           })}
         </ul>
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: "760px",
+          top: "470px",
+          width: "760px",
+          opacity: activeDescriptionOpacity,
+          transform: `translateY(${(1 - activeDescriptionOpacity) * 10}px)`,
+          fontSize: "48px",
+          fontWeight: "bold",
+          lineHeight: 1.3,
+          letterSpacing: "0.01em",
+          color: "#d7ecff",
+          textShadow: "0 4px 14px rgba(0, 0, 0, 0.35)",
+          transition: "opacity 120ms linear, transform 120ms linear",
+          pointerEvents: "none",
+        }}
+      >
+        {activeDescriptionText}
       </div>
     </FillFrame>
   );
