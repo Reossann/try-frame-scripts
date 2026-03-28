@@ -1,9 +1,9 @@
 import { Clip, ClipSequence } from "../src/lib/clip"
-import { Sound } from "../src/lib/sound/sound"
+import { Sound, sound_length } from "../src/lib/sound/sound"
 import { seconds } from "../src/lib/frame"
 import { Project, type ProjectSettings } from "../src/lib/project"
 import { TimeLine } from "../src/lib/timeline"
-import { Intro1Scene, Intro2Scene, Intro3Scene, Intro4Scene } from "./intro"
+import { Intro1Scene, Intro2Scene, Intro3Scene, Intro4Scene, Intro5Scene } from "./intro"
 import { ActivitiesScene } from "./activities"
 import { MembersScene } from "./members"
 import { BenefitsScene } from "./benefits"
@@ -16,13 +16,26 @@ export const PROJECT_SETTINGS: ProjectSettings = {
   fps: 60,
 }
 
-const INTRO1_DURATION = 2.4
-const INTRO2_DURATION = 1.4
-const INTRO3_DURATION = 2.8
-const INTRO4_DURATION = 2.2
+const INTRO1_DURATION = 2.3
+const INTRO2_DURATION = 1.7
+const INTRO3_DURATION = 3.9
+const INTRO4_DURATION = 7.4
+const INTRO5_DURATION = 2.2
+const ACTIVITIES_START = INTRO1_DURATION + INTRO2_DURATION + INTRO3_DURATION + INTRO4_DURATION + INTRO5_DURATION
 
-const INTRO2_START = INTRO1_DURATION
-const INTRO4_START = INTRO1_DURATION + INTRO2_DURATION + INTRO3_DURATION
+const ACTIVITIES_DURATION = 40.6
+const MEMBERS_DURATION = 10
+const BENEFITS_DURATION = 26.6
+const CLOSING_DURATION = 10
+const BGM_DURATION = 16
+const ACTIVITIES_TO_END_DURATION = ACTIVITIES_DURATION + MEMBERS_DURATION + BENEFITS_DURATION + CLOSING_DURATION
+const ACTIVITIES_BGM_PATH = "assets/Freeze__Clock.mp3"
+const ACTIVITIES_BGM_LOOP_CROSSFADE = 0.05
+const ACTIVITIES_BGM_SINGLE_DURATION = sound_length(ACTIVITIES_BGM_PATH) / PROJECT_SETTINGS.fps
+const ACTIVITIES_BGM_LOOP_STEP = Math.max(0.1, ACTIVITIES_BGM_SINGLE_DURATION - ACTIVITIES_BGM_LOOP_CROSSFADE)
+const ACTIVITIES_BGM_LOOP_COUNT = ACTIVITIES_BGM_SINGLE_DURATION > 0
+  ? Math.ceil(ACTIVITIES_TO_END_DURATION / ACTIVITIES_BGM_LOOP_STEP)
+  : 1
 
 
 
@@ -30,18 +43,27 @@ export const PROJECT = () => {
   return (
     <Project>
       <TimeLine>
-        <Clip label="Intro2TransitionSound" start={seconds(INTRO2_START)} duration={seconds(0.45)}>
+        <Clip label="MainBGM" start={seconds(0)} duration={seconds(BGM_DURATION)}>
           <Sound
-            sound="assets/軽いパンチ1.mp3"
-            volume={1.35}
+            sound="assets/Unrest.mp3"
+            volume={1}
           />
         </Clip>
-        <Clip label="Intro4TransitionSound" start={seconds(INTRO4_START)} duration={seconds(0.45)}>
-          <Sound
-            sound="assets/軽いパンチ1.mp3"
-            volume={1.35}
-          />
-        </Clip>
+        {Array.from({ length: ACTIVITIES_BGM_LOOP_COUNT }).map((_, index) => (
+          <Clip
+            key={index}
+            label={`ActivitiesBGM-${index + 1}`}
+            start={seconds(ACTIVITIES_START + index * ACTIVITIES_BGM_LOOP_STEP)}
+            duration={seconds(ACTIVITIES_BGM_SINGLE_DURATION > 0 ? ACTIVITIES_BGM_SINGLE_DURATION : ACTIVITIES_TO_END_DURATION)}
+          >
+            <Sound
+              sound={ACTIVITIES_BGM_PATH}
+              volume={0.75}
+              fadeInFrames={seconds(0.12)}
+              fadeOutFrames={seconds(0.16)}
+            />
+          </Clip>
+        ))}
 
         <ClipSequence>
           <Clip label="Intro1" duration={seconds(INTRO1_DURATION)}>
@@ -56,16 +78,19 @@ export const PROJECT = () => {
           <Clip label="Intro4" duration={seconds(INTRO4_DURATION)}>
             <Intro4Scene />
           </Clip>
-          <Clip label="Activities" duration={seconds(40.6)}>
+          <Clip label="Intro5" duration={seconds(INTRO5_DURATION)}>
+            <Intro5Scene />
+          </Clip>
+          <Clip label="Activities" duration={seconds(ACTIVITIES_DURATION)}>
             <ActivitiesScene />
           </Clip>
-          <Clip label="Members" duration={seconds(10)}>
+          <Clip label="Members" duration={seconds(MEMBERS_DURATION)}>
             <MembersScene />
           </Clip>
-          <Clip label="Benefits" duration={seconds(26.6)}>
+          <Clip label="Benefits" duration={seconds(BENEFITS_DURATION)}>
             <BenefitsScene />
           </Clip>
-          <Clip label="Closing" duration={seconds(10)}>
+          <Clip label="Closing" duration={seconds(CLOSING_DURATION)}>
             <ClosingScene />
           </Clip>
         </ClipSequence>

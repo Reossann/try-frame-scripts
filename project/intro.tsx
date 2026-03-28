@@ -128,11 +128,11 @@ export const Intro3Scene = () => {
     await context.sleep(seconds(0.1));
 
     await context.move(firstOpacity).to(1, seconds(0.36), BEZIER_SMOOTH);
-    await context.sleep(seconds(0.7));
+    await context.sleep(seconds(1));
     await context.move(firstOpacity).to(0, seconds(0.24), BEZIER_SMOOTH);
 
     await context.parallel([
-      context.move(secondOpacity).to(1, seconds(0.3), BEZIER_SMOOTH),
+      context.move(secondOpacity).to(1, seconds(0.5), BEZIER_SMOOTH),
       context.move(secondScale).to(1, seconds(0.42), BEZIER_SMOOTH),
     ]);
   }, []);
@@ -238,6 +238,37 @@ export const Intro4Scene = () => {
           </span>
         ))}
       </div>
+    </FillFrame>
+  );
+};
+
+export const Intro5Scene = () => {
+  const sceneOpacity = useVariable(1);
+
+  useAnimation(async (context) => {
+    await context.sleep(seconds(1.6));
+    await context.move(sceneOpacity).to(0, seconds(0.6), BEZIER_SMOOTH);
+  }, []);
+
+  return (
+    <FillFrame
+      style={{
+        opacity: sceneOpacity.use(),
+        alignItems: "center",
+        justifyContent: "center",
+        background: "radial-gradient(circle at center, #172033 0%, #0a101e 56%, #04070d 100%)",
+      }}
+    >
+      <img
+        src="assets/Gemini_Generated_Image_xncn7xncn7xncn7x.png"
+        alt="circle icon"
+        style={{
+          width: "760px",
+          height: "760px",
+          objectFit: "contain",
+          filter: "drop-shadow(0 16px 34px rgba(0, 0, 0, 0.45))",
+        }}
+      />
     </FillFrame>
   );
 };

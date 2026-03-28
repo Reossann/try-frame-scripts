@@ -7,6 +7,7 @@ import { FillFrame } from "../src/lib/layout/fill-frame"
 export const BenefitsScene = () => {
   const progress = useVariable(0);
   const titleScale = useVariable(1);
+  const subtitleHeight = "20%";
   const items = ["人脈の拡大", "最新情報の共有", "実践プロジェクト参加"];
   const itemDescriptions = ["人脈の拡大の説明", "最新情報の共有の説明", "実践プロジェクト参加の説明"];
   const titleDrawFrames = 42;
@@ -67,14 +68,21 @@ export const BenefitsScene = () => {
   const activeDescriptionText = activeDescriptionIndex >= 0 ? itemDescriptions[activeDescriptionIndex] : "";
 
   return (
-    <FillFrame
-      style={{
-        alignItems: "flex-start",
-        justifyContent: "flex-start",
-        position: "relative",
-        background: "radial-gradient(circle at top, #3b3b3b 0%, #202020 55%, #161616 100%)",
-      }}
-    >
+    <>
+      <FillFrame
+        style={{
+          top: "0px",
+          left: "0px",
+          right: "0px",
+          bottom: "0px",
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
+          position: "relative",
+          margin: "0",
+          padding: "0",
+          background: "radial-gradient(circle at top, #3b3b3b 0%, #202020 55%, #161616 100%)",
+        }}
+      >
       <img
         src="assets/Gemini_Generated_Image_xncn7xncn7xncn7x.png"
         alt="benefits visual"
@@ -94,8 +102,8 @@ export const BenefitsScene = () => {
       />
       <div
         style={{
-          width: "560px",
-          marginTop: "86px",
+          width: "620px",
+          marginTop: "8px",
           marginLeft: "24px",
           color: "#ffffff",
           fontWeight: "bold",
@@ -114,9 +122,9 @@ export const BenefitsScene = () => {
           style={{
             listStyle: "none",
             padding: "10px 0",
-            marginTop: "32px",
+            marginTop: "24px",
             borderTop: "1px solid rgba(255, 255, 255, 0.24)",
-            width: "470px",
+            width: "540px",
             background: "linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))",
             borderRadius: "14px",
             overflow: "visible",
@@ -139,7 +147,7 @@ export const BenefitsScene = () => {
                 style={{
                   opacity,
                   transform: `translateX(${translateX}px)`,
-                  minHeight: "116px",
+                  minHeight: "126px",
                   padding: "12px 28px 12px 20px",
                   borderBottom: "1px solid rgba(255, 255, 255, 0.22)",
                   background: `linear-gradient(90deg, rgba(255, 255, 255, ${itemGlow}), rgba(255, 255, 255, 0))`,
@@ -170,26 +178,54 @@ export const BenefitsScene = () => {
           })}
         </ul>
       </div>
+        <div
+          style={{
+            position: "absolute",
+            left: "760px",
+            top: "470px",
+            width: "760px",
+            opacity: activeDescriptionOpacity,
+            transform: `translateY(${(1 - activeDescriptionOpacity) * 10}px)`,
+            fontSize: "48px",
+            fontWeight: "bold",
+            lineHeight: 1.3,
+            letterSpacing: "0.01em",
+            color: "#d7ecff",
+            textShadow: "0 4px 14px rgba(0, 0, 0, 0.35)",
+            transition: "opacity 120ms linear, transform 120ms linear",
+            pointerEvents: "none",
+          }}
+        >
+          {activeDescriptionText}
+        </div>
+      </FillFrame>
       <div
         style={{
           position: "absolute",
-          left: "760px",
-          top: "470px",
-          width: "760px",
-          opacity: activeDescriptionOpacity,
-          transform: `translateY(${(1 - activeDescriptionOpacity) * 10}px)`,
-          fontSize: "48px",
+          left: "0px",
+          right: "0px",
+          bottom: "0px",
+          height: subtitleHeight,
+          display: "flex",
+          alignItems: "center",
+          margin: "0",
+          padding: "0 40px",
+          boxSizing: "border-box",
+          background: "rgba(7, 12, 20, 0.68)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.2)",
+          opacity: 1,
+          fontSize: "30px",
           fontWeight: "bold",
           lineHeight: 1.3,
           letterSpacing: "0.01em",
-          color: "#d7ecff",
+          color: "#e3f0ff",
           textShadow: "0 4px 14px rgba(0, 0, 0, 0.35)",
-          transition: "opacity 120ms linear, transform 120ms linear",
           pointerEvents: "none",
+          zIndex: 10,
         }}
       >
-        {activeDescriptionText}
+        （音声の文字起こしをここに表示）
       </div>
-    </FillFrame>
+    </>
   );
 };
