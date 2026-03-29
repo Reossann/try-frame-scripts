@@ -1,5 +1,5 @@
 import { Clip, ClipSequence } from "../src/lib/clip"
-import { Sound, sound_length } from "../src/lib/sound/sound"
+import { Sound } from "../src/lib/sound/sound"
 import { seconds } from "../src/lib/frame"
 import { Project, type ProjectSettings } from "../src/lib/project"
 import { TimeLine } from "../src/lib/timeline"
@@ -7,6 +7,7 @@ import { Intro1Scene, Intro2Scene, Intro3Scene, Intro4Scene, Intro5Scene } from 
 import { ActivitiesScene } from "./activities"
 import { MembersScene } from "./members"
 import { BenefitsScene } from "./benefits"
+import { AprilScheduleScene } from "./april-schedule"
 import { ClosingScene } from "./closing"
 
 export const PROJECT_SETTINGS: ProjectSettings = {
@@ -26,12 +27,13 @@ const ACTIVITIES_START = INTRO1_DURATION + INTRO2_DURATION + INTRO3_DURATION + I
 const ACTIVITIES_DURATION = 40.6
 const MEMBERS_DURATION = 10
 const BENEFITS_DURATION = 26.6
+const APRIL_SCHEDULE_DURATION = 10
 const CLOSING_DURATION = 10
 const BGM_DURATION = 16
-const ACTIVITIES_TO_END_DURATION = ACTIVITIES_DURATION + MEMBERS_DURATION + BENEFITS_DURATION + CLOSING_DURATION
+const ACTIVITIES_TO_END_DURATION = ACTIVITIES_DURATION + MEMBERS_DURATION + BENEFITS_DURATION + APRIL_SCHEDULE_DURATION + CLOSING_DURATION
 const ACTIVITIES_BGM_PATH = "assets/Freeze__Clock.mp3"
 const ACTIVITIES_BGM_LOOP_CROSSFADE = 0.05
-const ACTIVITIES_BGM_SINGLE_DURATION = sound_length(ACTIVITIES_BGM_PATH) / PROJECT_SETTINGS.fps
+const ACTIVITIES_BGM_SINGLE_DURATION = 56.52
 const ACTIVITIES_BGM_LOOP_STEP = Math.max(0.1, ACTIVITIES_BGM_SINGLE_DURATION - ACTIVITIES_BGM_LOOP_CROSSFADE)
 const ACTIVITIES_BGM_LOOP_COUNT = ACTIVITIES_BGM_SINGLE_DURATION > 0
   ? Math.ceil(ACTIVITIES_TO_END_DURATION / ACTIVITIES_BGM_LOOP_STEP)
@@ -50,19 +52,32 @@ export const PROJECT = () => {
           />
         </Clip>
         {Array.from({ length: ACTIVITIES_BGM_LOOP_COUNT }).map((_, index) => (
-          <Clip
-            key={index}
-            label={`ActivitiesBGM-${index + 1}`}
-            start={seconds(ACTIVITIES_START + index * ACTIVITIES_BGM_LOOP_STEP)}
-            duration={seconds(ACTIVITIES_BGM_SINGLE_DURATION > 0 ? ACTIVITIES_BGM_SINGLE_DURATION : ACTIVITIES_TO_END_DURATION)}
-          >
-            <Sound
-              sound={ACTIVITIES_BGM_PATH}
-              volume={0.75}
-              fadeInFrames={seconds(0.12)}
-              fadeOutFrames={seconds(0.16)}
-            />
-          </Clip>
+          (() => {
+            const segmentStartOffset = index * ACTIVITIES_BGM_LOOP_STEP
+            const remainingDuration = ACTIVITIES_TO_END_DURATION - segmentStartOffset
+            if (remainingDuration <= 0) return null
+
+            const segmentDuration = Math.min(
+              ACTIVITIES_BGM_SINGLE_DURATION > 0 ? ACTIVITIES_BGM_SINGLE_DURATION : ACTIVITIES_TO_END_DURATION,
+              remainingDuration,
+            )
+
+            return (
+              <Clip
+                key={index}
+                label={`ActivitiesBGM-${index + 1}`}
+                start={seconds(ACTIVITIES_START + segmentStartOffset)}
+                duration={seconds(segmentDuration)}
+              >
+                <Sound
+                  sound={ACTIVITIES_BGM_PATH}
+                  volume={0.75}
+                  fadeInFrames={seconds(0.12)}
+                  fadeOutFrames={seconds(0.16)}
+                />
+              </Clip>
+            )
+          })()
         ))}
 
         <ClipSequence>
@@ -89,6 +104,9 @@ export const PROJECT = () => {
           </Clip>
           <Clip label="Benefits" duration={seconds(BENEFITS_DURATION)}>
             <BenefitsScene />
+          </Clip>
+          <Clip label="AprilSchedule" duration={seconds(APRIL_SCHEDULE_DURATION)}>
+            <AprilScheduleScene />
           </Clip>
           <Clip label="Closing" duration={seconds(CLOSING_DURATION)}>
             <ClosingScene />
