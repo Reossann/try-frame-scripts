@@ -8,10 +8,10 @@ export const BenefitsScene = () => {
   const progress = useVariable(0);
   const titleScale = useVariable(1);
   const subtitleHeight = "20%";
-  const items = ["人脈の拡大", "最新情報の共有", "実践プロジェクト参加"];
-  const itemDescriptions = ["人脈の拡大の説明", "最新情報の共有の説明", "実践プロジェクト参加の説明"];
+  const items = ["人脈の拡大", "最新情報の共有", "実践プロジェクト参加", "メンター制度の参加"];
+  const itemDescriptions = ["人脈の拡大の説明", "最新情報の共有の説明", "実践プロジェクト参加の説明", "メンター制度の参加の説明"];
   const titleDrawFrames = 42;
-  const sceneDuration = seconds(26.6);
+  const sceneDuration = seconds(32.6);
   const firstItemDelay = seconds(1);
   const itemInterval = seconds(1);
   const itemFadeDuration = seconds(0.2);
