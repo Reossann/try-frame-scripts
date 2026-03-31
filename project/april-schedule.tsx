@@ -40,33 +40,42 @@ export const AprilScheduleScene = () => {
       >
         <div
           style={{
-            marginTop: "34px",
-            marginLeft: "40px",
+            position: "absolute",
+            top: "32px",
+            left: "34px",
+            right: "34px",
+            bottom: "22%",
             color: "#ffffff",
             fontWeight: "bold",
             textAlign: "left",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <DrawText
-            text="四月のサークル予定"
-            fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
-            fillColor="#ffffff"
-            durationFrames={42}
-            delayFrames={0}
-          />
+          <div style={{ transform: "scale(1.05)", transformOrigin: "left top" }}>
+            <DrawText
+              text="四月のサークル予定"
+              fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
+              fillColor="#ffffff"
+              durationFrames={42}
+              delayFrames={0}
+            />
+          </div>
 
           <div
             style={{
-              marginTop: "28px",
-              width: "980px",
+              marginTop: "22px",
+              width: "100%",
+              flex: 1,
               display: "flex",
               flexDirection: "column",
-              gap: "14px",
+              justifyContent: "space-between",
+              gap: "16px",
             }}
           >
             {plans.map((plan, index) => {
               const opacity = revealAt(index)
-              const translateX = (1 - opacity) * 24
+              const translateX = (1 - opacity) * 32
 
               return (
                 <div
@@ -76,18 +85,19 @@ export const AprilScheduleScene = () => {
                     transform: `translateX(${translateX}px)`,
                     display: "flex",
                     alignItems: "center",
-                    minHeight: "102px",
-                    borderRadius: "14px",
+                    flex: 1,
+                    minHeight: "116px",
+                    borderRadius: "16px",
                     border: "1px solid rgba(255, 255, 255, 0.22)",
                     background: "linear-gradient(120deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04))",
                     boxShadow: "0 10px 26px rgba(0, 0, 0, 0.25)",
-                    padding: "0 24px",
+                    padding: "0 34px",
                   }}
                 >
                   <div
                     style={{
-                      width: "170px",
-                      fontSize: "46px",
+                      width: "250px",
+                      fontSize: "60px",
                       color: "#9dd6ff",
                       textShadow: "0 3px 12px rgba(0, 0, 0, 0.28)",
                     }}
@@ -97,7 +107,7 @@ export const AprilScheduleScene = () => {
                   <div
                     style={{
                       flex: 1,
-                      fontSize: "44px",
+                      fontSize: "54px",
                       color: "#f1f8ff",
                       letterSpacing: "0.01em",
                       textShadow: "0 3px 12px rgba(0, 0, 0, 0.28)",
