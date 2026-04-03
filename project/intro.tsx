@@ -1,8 +1,8 @@
-import { useAnimation, useVariable } from "../src/lib/animation"
-import { BEZIER_SMOOTH } from "../src/lib/animation/functions"
-import { seconds } from "../src/lib/frame"
-import { FillFrame } from "../src/lib/layout/fill-frame"
-import { AnimatedCharacter } from "./props"
+import { useAnimation, useVariable } from "../src/lib/animation";
+import { BEZIER_SMOOTH } from "../src/lib/animation/functions";
+import { seconds } from "../src/lib/frame";
+import { FillFrame } from "../src/lib/layout/fill-frame";
+import { AnimatedCharacter } from "./props";
 
 export const Intro1Scene = () => {
   const timeOpacity = useVariable(0);
@@ -32,7 +32,8 @@ export const Intro1Scene = () => {
       style={{
         alignItems: "center",
         justifyContent: "center",
-        background: "radial-gradient(circle at 24% 18%, #313644 0%, #181a24 50%, #0a0c12 100%)",
+        background:
+          "radial-gradient(circle at 24% 18%, #313644 0%, #181a24 50%, #0a0c12 100%)",
       }}
     >
       <div
@@ -75,8 +76,12 @@ export const Intro1Scene = () => {
             textShadow: "0 4px 18px rgba(46, 146, 255, 0.35)",
           }}
         >
-          <div style={{ position: "absolute", opacity: timeOpacity.use() }}>時間？</div>
-          <div style={{ position: "absolute", opacity: studyOpacity.use() }}>勉強？</div>
+          <div style={{ position: "absolute", opacity: timeOpacity.use() }}>
+            時間？
+          </div>
+          <div style={{ position: "absolute", opacity: studyOpacity.use() }}>
+            勉強？
+          </div>
         </div>
 
         <div
@@ -87,7 +92,8 @@ export const Intro1Scene = () => {
             fontSize: "236px",
             color: "#ff4c4c",
             lineHeight: 1,
-            textShadow: "0 0 28px rgba(255, 64, 64, 0.68), 0 8px 20px rgba(0, 0, 0, 0.45)",
+            textShadow:
+              "0 0 28px rgba(255, 64, 64, 0.68), 0 8px 20px rgba(0, 0, 0, 0.45)",
             pointerEvents: "none",
           }}
         >
@@ -104,13 +110,29 @@ export const Intro2Scene = () => {
       style={{
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(145deg, #09131a 0%, #0f1f28 60%, #060a0d 100%)",
+        background:
+          "linear-gradient(145deg, #09131a 0%, #0f1f28 60%, #060a0d 100%)",
       }}
     >
-      <div style={{ position: "absolute", top: "94px", color: "rgba(226, 255, 255, 0.82)", letterSpacing: "0.35em", fontSize: "28px" }}>
+      <div
+        style={{
+          position: "absolute",
+          top: "94px",
+          color: "rgba(226, 255, 255, 0.82)",
+          letterSpacing: "0.35em",
+          fontSize: "28px",
+        }}
+      >
         KEYWORD
       </div>
-      <div style={{ fontSize: "170px", fontWeight: "bold", color: "#68fff3", textShadow: "0 0 26px rgba(56, 255, 240, 0.5)" }}>
+      <div
+        style={{
+          fontSize: "170px",
+          fontWeight: "bold",
+          color: "#68fff3",
+          textShadow: "0 0 26px rgba(56, 255, 240, 0.5)",
+        }}
+      >
         {"情報".split("").map((char, index) => (
           <AnimatedCharacter key={index} char={char} delayIndex={index} />
         ))}
@@ -142,7 +164,8 @@ export const Intro3Scene = () => {
       style={{
         alignItems: "center",
         justifyContent: "center",
-        background: "radial-gradient(circle at 70% 25%, #3a2c45 0%, #1d1326 54%, #0a0a11 100%)",
+        background:
+          "radial-gradient(circle at 70% 25%, #3a2c45 0%, #1d1326 54%, #0a0a11 100%)",
       }}
     >
       <div
@@ -180,7 +203,8 @@ export const Intro3Scene = () => {
             lineHeight: 1.05,
             textAlign: "center",
             color: "#ffe7b0",
-            textShadow: "0 0 26px rgba(255, 216, 128, 0.48), 0 8px 20px rgba(0, 0, 0, 0.44)",
+            textShadow:
+              "0 0 26px rgba(255, 216, 128, 0.48), 0 8px 20px rgba(0, 0, 0, 0.44)",
           }}
         >
           その場こそが
@@ -190,53 +214,80 @@ export const Intro3Scene = () => {
   );
 };
 
-const zoomInKeyframes = `
-@keyframes zoomInMajestic {
-  0% {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-`;
-
 export const Intro4Scene = () => {
+  const introOpacity = useVariable(0);
+  const mergeProgress = useVariable(0);
+  const punchScale = useVariable(1);
+
+  useAnimation(async (context) => {
+    await context.move(introOpacity).to(1, seconds(0.32), BEZIER_SMOOTH);
+    await context.sleep(seconds(2));
+    await context.move(mergeProgress).to(1, seconds(3.5), BEZIER_SMOOTH);
+    await context.sleep(seconds(1));
+    await context.move(punchScale).to(1.2, seconds(0.12), BEZIER_SMOOTH);
+    await context.move(punchScale).to(1, seconds(0.16), BEZIER_SMOOTH);
+  }, []);
+
+  const titleAlpha = introOpacity.use();
+  const merge = mergeProgress.use();
+  const accent = punchScale.use();
+  const collapse = 1 - merge;
+  const targetScale = 1 + merge * 0.28;
+  const baseWidth = 1;
+
   return (
     <FillFrame
       style={{
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #2a1f47 0%, #1a1a3e 38%, #0f1a2e 70%, #050810 100%)",
+        background:
+          "linear-gradient(135deg, #2a1f47 0%, #1a1a3e 38%, #0f1a2e 70%, #050810 100%)",
       }}
     >
-      <style>{zoomInKeyframes}</style>
       <div
         style={{
-          fontSize: "102px",
+          width: "100%",
+          maxWidth: "1100px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexWrap: "nowrap",
+          fontSize: "96px",
           fontWeight: "bold",
           color: "#f5d547",
-          textShadow: "0 0 32px rgba(245, 213, 71, 0.52), 0 12px 28px rgba(0, 0, 0, 0.58), inset 0 -1px 2px rgba(0, 0, 0, 0.3)",
-          letterSpacing: "0.04em",
+          textShadow:
+            "0 0 32px rgba(245, 213, 71, 0.52), 0 12px 28px rgba(0, 0, 0, 0.58), inset 0 -1px 2px rgba(0, 0, 0, 0.3)",
+          letterSpacing: "0.02em",
+          opacity: titleAlpha,
         }}
       >
-        {"情報技術メディア研究会".split("").map((char, index) => (
-          <span
-            key={index}
-            style={{
-              display: "inline-block",
-              animation: `zoomInMajestic 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${index * 0.12}s 1 forwards`,
-              width: char === " " ? "20px" : "auto",
-            }}
-          >
-            {char}
-          </span>
-        ))}
+        {"情報技術メディア研究会".split("").map((char, index) => {
+          const isTarget = char === "技" || char === "研";
+          const widthFactor = isTarget ? baseWidth : Math.max(0, collapse) * baseWidth;
+          const charOpacity = isTarget ? 1 : collapse;
+          const extraRightMargin = isTarget && char === "技" ? `${0.14 + 0.08 * merge}em` : "0";
+
+          return (
+            <span
+              key={`${char}-${index}`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: `${widthFactor}em`,
+                minWidth: 0,
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                opacity: charOpacity,
+                transform: isTarget ? `scale(${targetScale * accent})` : "scale(1)",
+                transformOrigin: "center center",
+                marginRight: extraRightMargin,
+              }}
+            >
+              {char}
+            </span>
+          );
+        })}
       </div>
     </FillFrame>
   );
@@ -256,15 +307,16 @@ export const Intro5Scene = () => {
         opacity: sceneOpacity.use(),
         alignItems: "center",
         justifyContent: "center",
-        background: "radial-gradient(circle at center, #172033 0%, #0a101e 56%, #04070d 100%)",
+        background:
+          "radial-gradient(circle at center, #172033 0%, #0a101e 56%, #04070d 100%)",
       }}
     >
       <img
-        src="assets/Gemini_Generated_Image_xncn7xncn7xncn7x.png"
-        alt="circle icon"
+        src="assets/geeken_logo_white_trimmed.png"
+        alt="geeken logo"
         style={{
-          width: "760px",
-          height: "760px",
+          width: "500px",
+          height: "500px",
           objectFit: "contain",
           filter: "drop-shadow(0 16px 34px rgba(0, 0, 0, 0.45))",
         }}
@@ -272,4 +324,3 @@ export const Intro5Scene = () => {
     </FillFrame>
   );
 };
-

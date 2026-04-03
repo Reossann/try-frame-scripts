@@ -1,32 +1,32 @@
-import { useAnimation, useVariable } from "../src/lib/animation"
-import { DrawText } from "../src/lib/animation/effect/draw-text"
-import { BEZIER_SMOOTH } from "../src/lib/animation/functions"
-import { seconds } from "../src/lib/frame"
-import { FillFrame } from "../src/lib/layout/fill-frame"
+import { useAnimation, useVariable } from "../src/lib/animation";
+import { DrawText } from "../src/lib/animation/effect/draw-text";
+import { BEZIER_SMOOTH } from "../src/lib/animation/functions";
+import { seconds } from "../src/lib/frame";
+import { FillFrame } from "../src/lib/layout/fill-frame";
 
 export const AprilScheduleScene = () => {
-  const progress = useVariable(0)
-  const subtitleHeight = "20%"
+  const progress = useVariable(0);
+  const subtitleHeight = "20%";
   const plans = [
     { date: "4/6", text: "新歓説明会・体験参加" },
     { date: "4/13", text: "ハンズオン勉強会" },
     { date: "4/20", text: "ミニハッカソン" },
     { date: "4/27", text: "交流会・プロジェクト相談会" },
-  ]
+  ];
 
   useAnimation(async (context) => {
-    await context.move(progress).to(1, seconds(10), BEZIER_SMOOTH)
-  }, [])
+    await context.move(progress).to(1, seconds(10), BEZIER_SMOOTH);
+  }, []);
 
-  const currentProgress = progress.use()
+  const currentProgress = progress.use();
 
   const revealAt = (index: number) => {
-    const start = 0.18 + index * 0.16
-    const end = start + 0.22
-    if (currentProgress <= start) return 0
-    if (currentProgress >= end) return 1
-    return (currentProgress - start) / (end - start)
-  }
+    const start = 0.18 + index * 0.16;
+    const end = start + 0.22;
+    if (currentProgress <= start) return 0;
+    if (currentProgress >= end) return 1;
+    return (currentProgress - start) / (end - start);
+  };
 
   return (
     <>
@@ -35,9 +35,27 @@ export const AprilScheduleScene = () => {
           alignItems: "flex-start",
           justifyContent: "flex-start",
           position: "relative",
-          background: "radial-gradient(circle at top, #2b3446 0%, #182030 56%, #0a111b 100%)",
+          background:
+            "radial-gradient(circle at top, #2b3446 0%, #182030 56%, #0a111b 100%)",
         }}
       >
+        <img
+          src="assets/geeken_logo_white_trimmed.png"
+          alt="geeken logo"
+          style={{
+            position: "absolute",
+            top: "0px",
+            right: "0px",
+            width: "210px",
+            height: "210px",
+            objectFit: "contain",
+            backgroundColor: "transparent",
+            borderRadius: "0px",
+            boxShadow: "none",
+            border: "none",
+            pointerEvents: "none",
+          }}
+        />
         <div
           style={{
             position: "absolute",
@@ -52,7 +70,9 @@ export const AprilScheduleScene = () => {
             flexDirection: "column",
           }}
         >
-          <div style={{ transform: "scale(1.05)", transformOrigin: "left top" }}>
+          <div
+            style={{ transform: "scale(1.05)", transformOrigin: "left top" }}
+          >
             <DrawText
               text="四月のサークル予定"
               fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
@@ -74,8 +94,8 @@ export const AprilScheduleScene = () => {
             }}
           >
             {plans.map((plan, index) => {
-              const opacity = revealAt(index)
-              const translateX = (1 - opacity) * 32
+              const opacity = revealAt(index);
+              const translateX = (1 - opacity) * 32;
 
               return (
                 <div
@@ -89,7 +109,8 @@ export const AprilScheduleScene = () => {
                     minHeight: "116px",
                     borderRadius: "16px",
                     border: "1px solid rgba(255, 255, 255, 0.22)",
-                    background: "linear-gradient(120deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04))",
+                    background:
+                      "linear-gradient(120deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04))",
                     boxShadow: "0 10px 26px rgba(0, 0, 0, 0.25)",
                     padding: "0 34px",
                   }}
@@ -116,7 +137,7 @@ export const AprilScheduleScene = () => {
                     {plan.text}
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
@@ -149,5 +170,5 @@ export const AprilScheduleScene = () => {
         （音声の文字起こしをここに表示）
       </div>
     </>
-  )
-}
+  );
+};
