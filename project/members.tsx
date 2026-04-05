@@ -6,9 +6,16 @@ import { FillFrame } from "../src/lib/layout/fill-frame";
 
 export const MembersScene = () => {
   const progress = useVariable(0);
+  const currentProgress = progress.use();
+  const cohortData = [
+    { label: "9期", count: 47, color: "#8bd3ff" },
+    { label: "8期", count: 16, color: "#c2e7ff" },
+    { label: "7期以降", count: 9, color: "#e3f6ff" },
+  ];
+  const maxCount = Math.max(...cohortData.map((item) => item.count));
 
   useAnimation(async (context) => {
-    await context.move(progress).to(1, seconds(10), BEZIER_SMOOTH);
+    await context.move(progress).to(1, seconds(7), BEZIER_SMOOTH);
   }, []);
 
   return (
@@ -39,10 +46,11 @@ export const MembersScene = () => {
         />
         <div
           style={{
+            width: "1420px",
             fontSize: "60px",
             color: "#ffffff",
             fontWeight: "bold",
-            textAlign: "center",
+            textAlign: "left",
           }}
         >
           <DrawText
@@ -50,37 +58,79 @@ export const MembersScene = () => {
             fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
             fillColor="#ffffff"
           />
-          <div style={{ marginTop: "20px", fontSize: "40px" }}>
-            [何年生n人 - 例: 1年生10人, 2年生5人]
-          </div>
-          {/* 簡易グラフ風 */}
+
           <div
             style={{
-              width: "400px",
-              height: "200px",
-              backgroundColor: "#444",
-              marginTop: "20px",
+              marginTop: "30px",
+              width: "1360px",
+              borderRadius: "16px",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              background: "linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))",
+              boxShadow: "0 16px 30px rgba(0, 0, 0, 0.28)",
+              padding: "28px 34px",
               display: "flex",
-              alignItems: "end",
-              justifyContent: "space-around",
+              flexDirection: "column",
+              gap: "22px",
             }}
           >
-            <div
-              style={{
-                width: "50px",
-                height: `${progress.use() * 150}px`,
-                backgroundColor: "#ffffff",
-                transition: "height 0.5s",
-              }}
-            ></div>
-            <div
-              style={{
-                width: "50px",
-                height: `${progress.use() * 100}px`,
-                backgroundColor: "#ffffff",
-                transition: "height 0.5s",
-              }}
-            ></div>
+            {cohortData.map((item) => {
+              const animatedRatio = (item.count / maxCount) * currentProgress;
+              return (
+                <div
+                  key={item.label}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                    gap: "18px",
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      height: "72px",
+                      borderRadius: "14px",
+                      border: "1px solid rgba(255, 255, 255, 0.15)",
+                      background: "rgba(6, 16, 28, 0.38)",
+                      overflow: "hidden",
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      padding: "0 8px",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${animatedRatio * 100}%`,
+                        minWidth: currentProgress > 0 ? "8px" : "0px",
+                        height: "52px",
+                        borderRadius: "11px",
+                        background: `linear-gradient(90deg, rgba(255, 255, 255, 0.25), ${item.color})`,
+                        boxShadow: "0 6px 14px rgba(0, 0, 0, 0.25)",
+                        transition: "width 180ms linear",
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      width: "280px",
+                      display: "flex",
+                      alignItems: "baseline",
+                      justifyContent: "space-between",
+                      color: "#ffffff",
+                      borderLeft: "2px solid rgba(255, 255, 255, 0.55)",
+                      paddingLeft: "18px",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <span style={{ fontSize: "44px", fontWeight: "bold", whiteSpace: "nowrap" }}>{item.label}</span>
+                    <span style={{ fontSize: "34px", color: "#d3ecff" }}>{item.count}人</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </FillFrame>
@@ -99,7 +149,7 @@ export const MembersScene = () => {
           background: "rgba(7, 12, 20, 0.68)",
           borderTop: "1px solid rgba(255, 255, 255, 0.2)",
           opacity: 1,
-          fontSize: "30px",
+          fontSize: "50px",
           fontWeight: "bold",
           lineHeight: 1.3,
           letterSpacing: "0.01em",
@@ -109,7 +159,9 @@ export const MembersScene = () => {
           zIndex: 10,
         }}
       >
-        （音声の文字起こしをここに表示）
+        公認サークルになってまだ半年たってないくらいだけど、
+        <br />
+        こんなにたくさんのメンバーがいるよ！！（2026年4月現在）
       </div>
     </>
   );
