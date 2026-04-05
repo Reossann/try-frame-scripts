@@ -13,11 +13,18 @@ export const ActivitiesScene = () => {
     "外部イベント",
   ];
   const itemDescriptions = [
-    "ハッカソンの説明",
-    "ゼミの説明",
-    "テスト勉強会の説明",
-    "プロジェクトの説明",
-    "外部イベントの説明",
+    "期間を設けて集中的にチーム開発を行うイベント",
+    "各々が学んだことを共有する取り組み",
+    "テスト前に集まって勉強する会",
+    "やりたいことを実現できる",
+    "他会社や他大学のイベントに参加する活動",
+  ];
+  const subtitleTexts = [
+    "チーム開発に取り組めるイベントです。いろんな知識がいっぱい知れる！！",
+    "学生だけで行う教え合いのようなものです。隔週水曜日に開催中",
+    "まだ一度しか実施できてないですが常習化していきたいですね。",
+    "開発以外にも取り扱ってて、一言では言い表せないくらいなんでもできます。",
+    "エンジニアの方から有益な話を聞けるタイミングがたくさん！！",
   ];
   const titleDrawFrames = 42;
   const sceneDuration = seconds(40.6);
@@ -75,6 +82,14 @@ export const ActivitiesScene = () => {
   }
   const activeDescriptionText =
     activeDescriptionIndex >= 0 ? itemDescriptions[activeDescriptionIndex] : "";
+  const activeSubtitleText =
+    activeDescriptionIndex >= 0
+      ? subtitleTexts[activeDescriptionIndex]
+      : "サークル紹介するよ！！主に取り扱っているのはこの5つ！！";
+  const isHackathonActive = activeDescriptionIndex === 0;
+  const isZemiActive = activeDescriptionIndex === 1;
+  const isStudyActive = activeDescriptionIndex === 2;
+  const isProjectActive = activeDescriptionIndex === 3;
 
   return (
     <>
@@ -191,22 +206,152 @@ export const ActivitiesScene = () => {
         <div
           style={{
             position: "absolute",
-            left: "760px",
-            top: "470px",
-            width: "760px",
+            left: "600px",
+            top: "180px",
+            width: "1200px",
+            minHeight: "460px",
             opacity: activeDescriptionOpacity,
             transform: `translateY(${(1 - activeDescriptionOpacity) * 10}px)`,
-            fontSize: "48px",
-            fontWeight: "bold",
-            lineHeight: 1.3,
-            letterSpacing: "0.01em",
             color: "#d7ecff",
             textShadow: "0 4px 14px rgba(0, 0, 0, 0.35)",
             transition: "opacity 120ms linear, transform 120ms linear",
             pointerEvents: "none",
+            display: "flex",
+            flexDirection: "column",
+            gap: "28px",
+            border: "2px dashed rgba(131, 215, 255, 0.9)",
+            borderRadius: "16px",
+            padding: "18px",
+            boxSizing: "border-box",
+            background: "rgba(9, 18, 32, 0.2)",
           }}
         >
-          {activeDescriptionText}
+          <div
+            style={{
+              fontSize: "48px",
+              fontWeight: "bold",
+              lineHeight: 1.3,
+              letterSpacing: "0.01em",
+            }}
+          >
+            {activeDescriptionText}
+          </div>
+
+          {isHackathonActive ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "24px",
+              }}
+            >
+              <img
+                src="assets/Menhera.png"
+                alt="Menhera"
+                style={{
+                  width: "420px",
+                  height: "340px",
+                  objectFit: "cover",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255, 255, 255, 0.24)",
+                  boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
+                }}
+              />
+              <img
+                src="assets/MeCHAKCHA.png"
+                alt="MeCHAKCHA"
+                style={{
+                  width: "420px",
+                  height: "420px",
+                  objectFit: "contain",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255, 255, 255, 0.24)",
+                  boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
+                }}
+              />
+            </div>
+          ) : null}
+
+          {isZemiActive ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "24px",
+              }}
+            >
+              <img
+                src="assets/zemi1.png"
+                alt="zemi1"
+                style={{
+                  width: "620px",
+                  height: "340px",
+                  objectFit: "cover",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255, 255, 255, 0.24)",
+                  boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
+                }}
+              />
+              <img
+                src="assets/zemi2.png"
+                alt="zemi2"
+                style={{
+                  width: "420px",
+                  height: "230px",
+                  objectFit: "contain",
+                  borderRadius: "14px",
+                  border: "none",
+                  boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
+                }}
+              />
+            </div>
+          ) : null}
+
+          {isStudyActive ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "24px",
+              }}
+            >
+              <img
+                src="assets/study.jpg"
+                alt="study"
+                style={{
+                  width: "620px",
+                  height: "340px",
+                  objectFit: "cover",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255, 255, 255, 0.24)",
+                  boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
+                }}
+              />
+            </div>
+          ) : null}
+
+          {isProjectActive ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "24px",
+              }}
+            >
+              <img
+                src="assets/project.png"
+                alt="project1"
+                style={{
+                  width: "620px",
+                  height: "340px",
+                  objectFit: "cover",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255, 255, 255, 0.24)",
+                  boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
+                }}
+              />
+            </div>
+          ) : null}
         </div>
       </FillFrame>
       <div
@@ -224,7 +369,7 @@ export const ActivitiesScene = () => {
           background: "rgba(7, 12, 20, 0.68)",
           borderTop: "1px solid rgba(255, 255, 255, 0.2)",
           opacity: 1,
-          fontSize: "30px",
+          fontSize: "50px",
           fontWeight: "bold",
           lineHeight: 1.3,
           letterSpacing: "0.01em",
@@ -234,7 +379,7 @@ export const ActivitiesScene = () => {
           zIndex: 10,
         }}
       >
-        （音声の文字起こしをここに表示）
+        {activeSubtitleText}
       </div>
     </>
   );
