@@ -7,25 +7,36 @@ import { FillFrame } from "../src/lib/layout/fill-frame";
 export const AprilScheduleScene = () => {
   const progress = useVariable(0);
   const subtitleHeight = "20%";
+  const sceneDurationSeconds = 10;
+  const holdAfterRevealSeconds = 3;
+  const revealWindowSeconds = Math.max(
+    1,
+    sceneDurationSeconds - holdAfterRevealSeconds
+  );
   const plans = [
-    { date: "4/6", text: "新歓説明会・体験参加" },
-    { date: "4/13", text: "ハンズオン勉強会" },
-    { date: "4/20", text: "ミニハッカソン" },
-    { date: "4/27", text: "交流会・プロジェクト相談会" },
+    { date: "4/20,23", text: "対面新歓" },
+    { date: "4/22,29", text: "発展ゼミ" },
+    { date: "4/29", text: "質問回" },
+    { date: "5/2-9", text: "GW => メンター実施" },
+    { date: "5月中旬", text: "勉強会" },
   ];
 
   useAnimation(async (context) => {
-    await context.move(progress).to(1, seconds(10), BEZIER_SMOOTH);
+    await context
+      .move(progress)
+      .to(1, seconds(sceneDurationSeconds), BEZIER_SMOOTH);
   }, []);
 
   const currentProgress = progress.use();
+  const elapsedSeconds = currentProgress * sceneDurationSeconds;
+  const revealProgress = Math.min(1, elapsedSeconds / revealWindowSeconds);
 
   const revealAt = (index: number) => {
-    const start = 0.18 + index * 0.16;
-    const end = start + 0.22;
-    if (currentProgress <= start) return 0;
-    if (currentProgress >= end) return 1;
-    return (currentProgress - start) / (end - start);
+    const start = 0.08 + index * 0.18;
+    const end = start + 0.15;
+    if (revealProgress <= start) return 0;
+    if (revealProgress >= end) return 1;
+    return (revealProgress - start) / (end - start);
   };
 
   return (
@@ -74,7 +85,7 @@ export const AprilScheduleScene = () => {
             style={{ transform: "scale(1.05)", transformOrigin: "left top" }}
           >
             <DrawText
-              text="四月のサークル予定"
+              text="4-5月のサークル予定"
               fontUrl="assets/NotoSerifCJKJP-Medium.ttf"
               fillColor="#ffffff"
               durationFrames={42}
@@ -157,7 +168,7 @@ export const AprilScheduleScene = () => {
           background: "rgba(7, 12, 20, 0.68)",
           borderTop: "1px solid rgba(255, 255, 255, 0.2)",
           opacity: 1,
-          fontSize: "30px",
+          fontSize: "50px",
           fontWeight: "bold",
           lineHeight: 1.3,
           letterSpacing: "0.01em",
@@ -167,7 +178,7 @@ export const AprilScheduleScene = () => {
           zIndex: 10,
         }}
       >
-        （音声の文字起こしをここに表示）
+        色々やるよ！詳しくは技研公式Xアカウントや技研入ってる人のSNSをチェックしてね！！
       </div>
     </>
   );

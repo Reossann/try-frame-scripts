@@ -1,12 +1,10 @@
 import { useAnimation, useVariable } from "../src/lib/animation";
 import { DrawText } from "../src/lib/animation/effect/draw-text";
-import { BEZIER_SMOOTH } from "../src/lib/animation/functions";
 import { seconds } from "../src/lib/frame";
 import { FillFrame } from "../src/lib/layout/fill-frame";
 
 export const BenefitsScene = () => {
   const progress = useVariable(0);
-  const titleScale = useVariable(1);
   const subtitleHeight = "20%";
   const items = [
     "人脈の拡大",
@@ -15,10 +13,22 @@ export const BenefitsScene = () => {
     "メンター制度の参加",
   ];
   const itemDescriptions = [
-    "人脈の拡大の説明",
-    "最新情報の共有の説明",
-    "実践プロジェクト参加の説明",
-    "メンター制度の参加の説明",
+    "いろんな先輩とつながれる",
+    "学校のことや業界のことなど、最新の情報を得られる",
+    "同級生や先輩と自分の理想を現実に",
+    "多対一のグループで行われる共同開発",
+  ];
+  const subtitleTexts = [
+    "皆技術の方向が違うので、いろんな人とつながれるのが魅力！！",
+    "授業の特徴や最新の技術トレンドなど、いろんな情報が入ってくる！！",
+    "同志を見つけて自分が作りたいものを作れる環境、最高だと思います。",
+    "技術的に強くなるにはいいスタートダッシュになる、、はず！！！",
+  ];
+  const itemImages = [
+    "assets/人脈拡大.jpg",
+    "assets/最新情報.jpg",
+    "assets/実践プロジェクト.jpg",
+    "assets/メンター制度.jpg",
   ];
   const titleDrawFrames = 42;
   const sceneDuration = seconds(32.6);
@@ -34,11 +44,6 @@ export const BenefitsScene = () => {
 
   useAnimation(async (context) => {
     await context.move(progress).to(1, sceneDuration);
-  }, []);
-
-  useAnimation(async (context) => {
-    await context.move(titleScale).to(1.12, seconds(0.35), BEZIER_SMOOTH);
-    await context.move(titleScale).to(1, seconds(0.35), BEZIER_SMOOTH);
   }, []);
 
   const currentProgress = progress.use();
@@ -81,6 +86,12 @@ export const BenefitsScene = () => {
   }
   const activeDescriptionText =
     activeDescriptionIndex >= 0 ? itemDescriptions[activeDescriptionIndex] : "";
+  const activeImageSrc =
+    activeDescriptionIndex >= 0 ? itemImages[activeDescriptionIndex] : "";
+  const activeSubtitleText =
+    activeDescriptionIndex >= 0
+      ? subtitleTexts[activeDescriptionIndex]
+      : "上記の恩恵が受けられるよ！！　（画像はすべてGemini作）";
 
   return (
     <>
@@ -124,7 +135,6 @@ export const BenefitsScene = () => {
             color: "#ffffff",
             fontWeight: "bold",
             textAlign: "left",
-            transform: `scale(${titleScale.use()})`,
           }}
         >
           <DrawText
@@ -199,22 +209,45 @@ export const BenefitsScene = () => {
         <div
           style={{
             position: "absolute",
-            left: "760px",
-            top: "470px",
-            width: "760px",
+            left: "700px",
+            top: "190px",
+            width: "850px",
             opacity: activeDescriptionOpacity,
             transform: `translateY(${(1 - activeDescriptionOpacity) * 10}px)`,
-            fontSize: "48px",
-            fontWeight: "bold",
-            lineHeight: 1.3,
-            letterSpacing: "0.01em",
             color: "#d7ecff",
             textShadow: "0 4px 14px rgba(0, 0, 0, 0.35)",
             transition: "opacity 120ms linear, transform 120ms linear",
             pointerEvents: "none",
+            display: "flex",
+            flexDirection: "column",
+            gap: "22px",
           }}
         >
-          {activeDescriptionText}
+          <div
+            style={{
+              fontSize: "48px",
+              fontWeight: "bold",
+              lineHeight: 1.3,
+              letterSpacing: "0.01em",
+            }}
+          >
+            {activeDescriptionText}
+          </div>
+          {activeDescriptionIndex >= 0 ? (
+            <img
+              src={activeImageSrc}
+              alt={items[activeDescriptionIndex]}
+              style={{
+                width: "850px",
+                height: "330px",
+                marginTop: "10px",
+                objectFit: "cover",
+                borderRadius: "14px",
+                border: "1px solid rgba(255, 255, 255, 0.24)",
+                boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
+              }}
+            />
+          ) : null}
         </div>
       </FillFrame>
       <div
@@ -232,7 +265,7 @@ export const BenefitsScene = () => {
           background: "rgba(7, 12, 20, 0.68)",
           borderTop: "1px solid rgba(255, 255, 255, 0.2)",
           opacity: 1,
-          fontSize: "30px",
+          fontSize: "50px",
           fontWeight: "bold",
           lineHeight: 1.3,
           letterSpacing: "0.01em",
@@ -242,7 +275,7 @@ export const BenefitsScene = () => {
           zIndex: 10,
         }}
       >
-        （音声の文字起こしをここに表示）
+        {activeSubtitleText}
       </div>
     </>
   );

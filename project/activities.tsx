@@ -90,6 +90,7 @@ export const ActivitiesScene = () => {
   const isZemiActive = activeDescriptionIndex === 1;
   const isStudyActive = activeDescriptionIndex === 2;
   const isProjectActive = activeDescriptionIndex === 3;
+  const isExternalEventActive = activeDescriptionIndex === 4;
 
   return (
     <>
@@ -219,7 +220,6 @@ export const ActivitiesScene = () => {
             display: "flex",
             flexDirection: "column",
             gap: "28px",
-            border: "2px dashed rgba(131, 215, 255, 0.9)",
             borderRadius: "16px",
             padding: "18px",
             boxSizing: "border-box",
@@ -345,6 +345,30 @@ export const ActivitiesScene = () => {
                   width: "620px",
                   height: "340px",
                   objectFit: "cover",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255, 255, 255, 0.24)",
+                  boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
+                }}
+              />
+            </div>
+          ) : null}
+
+          {isExternalEventActive ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "24px",
+              }}
+            >
+              <img
+                src="assets/geek.png"
+                alt="geek"
+                style={{
+                  width: "660px",
+                  height: "400px",
+                  objectFit: "contain",
+                  backgroundColor: "rgba(10, 18, 30, 0.45)",
                   borderRadius: "14px",
                   border: "1px solid rgba(255, 255, 255, 0.24)",
                   boxShadow: "0 12px 26px rgba(0, 0, 0, 0.34)",
