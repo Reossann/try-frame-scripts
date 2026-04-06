@@ -11,13 +11,13 @@ export const AprilScheduleScene = () => {
   const holdAfterRevealSeconds = 3;
   const revealWindowSeconds = Math.max(
     1,
-    sceneDurationSeconds - holdAfterRevealSeconds
+    sceneDurationSeconds - holdAfterRevealSeconds,
   );
   const plans = [
     { date: "4/20,23", text: "対面新歓" },
     { date: "4/22,29", text: "発展ゼミ" },
     { date: "4/29", text: "質問回" },
-    { date: "5/2-9", text: "GW => メンター実施" },
+    { date: "5/2-9", text: "GW => チーム開発実施" },
     { date: "5月中旬", text: "勉強会" },
   ];
 
