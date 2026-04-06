@@ -1,24 +1,24 @@
+import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import ffprobeInstaller from "@ffprobe-installer/ffprobe";
 import {
   app,
   BrowserWindow,
-  Menu,
   ipcMain,
+  Menu,
   type MenuItemConstructorOptions,
 } from "electron";
-import { spawn, ChildProcess } from "node:child_process";
+import { ChildProcess, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { pathToFileURL } from "node:url";
-import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
-import ffprobeInstaller from "@ffprobe-installer/ffprobe";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import puppeteer from "puppeteer";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const useDevServer = process.env.VITE_DEV_SERVER_URL !== undefined;
-const runMode = process.env.FRAMESCRIPT_RUN_MODE ?? (useDevServer ? "dev" : "bin");
+const runMode =
+  process.env.FRAMESCRIPT_RUN_MODE ?? (useDevServer ? "dev" : "bin");
 const useBinaries = runMode !== "dev";
 const APP_NAME = "FrameScript";
 
@@ -28,7 +28,8 @@ if (app.name !== APP_NAME) {
 
 const resolveBundledBinaryPath = (installer: unknown) => {
   const candidate =
-    (installer as { path?: string; default?: { path?: string } } | undefined)?.path ??
+    (installer as { path?: string; default?: { path?: string } } | undefined)
+      ?.path ??
     (installer as { default?: { path?: string } } | undefined)?.default?.path;
   if (typeof candidate === "string" && candidate.trim().length > 0) {
     return candidate;
@@ -41,7 +42,7 @@ const resolvePuppeteerExecutablePath = () => {
     if (typeof puppeteer?.executablePath === "function") {
       return puppeteer.executablePath();
     }
-  } catch (_error) {
+  } catch {
     // ignore
   }
   return null;
@@ -49,8 +50,12 @@ const resolvePuppeteerExecutablePath = () => {
 
 function getBundledBinaryEnv(): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
-  const ffmpegPath = process.env.FRAMESCRIPT_FFMPEG_PATH ?? resolveBundledBinaryPath(ffmpegInstaller);
-  const ffprobePath = process.env.FRAMESCRIPT_FFPROBE_PATH ?? resolveBundledBinaryPath(ffprobeInstaller);
+  const ffmpegPath =
+    process.env.FRAMESCRIPT_FFMPEG_PATH ??
+    resolveBundledBinaryPath(ffmpegInstaller);
+  const ffprobePath =
+    process.env.FRAMESCRIPT_FFPROBE_PATH ??
+    resolveBundledBinaryPath(ffprobeInstaller);
   const chromiumPath =
     process.env.FRAMESCRIPT_CHROMIUM_PATH ??
     process.env.PUPPETEER_EXECUTABLE_PATH ??
@@ -86,10 +91,21 @@ type RenderStartPayload = {
   ffmpegLowMemory: boolean;
 };
 
+type RenderPreparePayload = {
+  fps: number;
+  segments: unknown[];
+  loudness?: "youtube";
+  cacheGiB: number;
+  totalFrames: number;
+};
+
 function getPlatformKey() {
-  if (process.platform === "linux" && process.arch === "x64") return "linux-x86_64";
-  if (process.platform === "win32" && process.arch === "x64") return "win32-x86_64";
-  if (process.platform === "darwin" && process.arch === "arm64") return "macos-arm64";
+  if (process.platform === "linux" && process.arch === "x64")
+    return "linux-x86_64";
+  if (process.platform === "win32" && process.arch === "x64")
+    return "win32-x86_64";
+  if (process.platform === "darwin" && process.arch === "arm64")
+    return "macos-arm64";
   return `${process.platform}-${process.arch}`;
 }
 
@@ -118,7 +134,10 @@ function getRenderPageUrl() {
 }
 
 function getRenderOutputPath() {
-  return process.env.FRAMESCRIPT_OUTPUT_PATH ?? path.join(process.cwd(), "output.mp4");
+  return (
+    process.env.FRAMESCRIPT_OUTPUT_PATH ??
+    path.join(process.cwd(), "output.mp4")
+  );
 }
 
 function getRenderOutputDisplayPath() {
@@ -146,13 +165,12 @@ function startBackend(): Promise<void> {
     });
 
     console.log("[backend] spawn: cargo run (dev)");
-
   } else {
     const info = getBackendBinaryPath();
     if (!fs.existsSync(info.path)) {
       throw new Error(
         `Backend binary not found for platform "${info.platformKey}". Tried:\n` +
-        info.candidates.map((p) => `- ${p}`).join("\n"),
+          info.candidates.map((p) => `- ${p}`).join("\n"),
       );
     }
 
@@ -178,6 +196,7 @@ function startBackend(): Promise<void> {
   backendProcess.on("exit", (code, signal) => {
     console.log(`[backend exited] code=${code} signal=${signal}`);
     backendProcess = null;
+    backendHealthyPromise = null;
   });
 
   return Promise.resolve();
@@ -188,6 +207,7 @@ function stopBackend() {
     console.log("[backend] kill");
     backendProcess.kill();
   }
+  backendHealthyPromise = null;
 }
 
 async function waitForHealthz(): Promise<void> {
@@ -221,6 +241,149 @@ async function waitForHealthz(): Promise<void> {
   return backendHealthyPromise;
 }
 
+async function postBackendJson(pathname: string, body?: unknown) {
+  const response = await fetch(`http://127.0.0.1:3000${pathname}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: body == null ? undefined : JSON.stringify(body),
+  });
+  if (!response.ok) {
+    let detail = "";
+    try {
+      detail = (await response.text()).trim();
+    } catch {
+      // ignore
+    }
+    const suffix = detail ? `: ${detail.slice(0, 240)}` : "";
+    throw new Error(`${pathname} -> HTTP ${response.status}${suffix}`);
+  }
+}
+
+async function withRetry<T>(task: () => Promise<T>, retries: number) {
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      if (attempt > 0) {
+        await startBackend();
+        await waitForHealthz();
+      }
+      return await task();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Backend request failed");
+}
+
+async function prepareRender(payload: RenderPreparePayload) {
+  const fpsRaw = Number(payload.fps);
+  const fps = Number.isFinite(fpsRaw) && fpsRaw > 0 ? fpsRaw : 60;
+  const totalFramesRaw = Number(payload.totalFrames);
+  const totalFrames =
+    Number.isFinite(totalFramesRaw) && totalFramesRaw > 0
+      ? Math.round(totalFramesRaw)
+      : 0;
+  const cacheGiBRaw = Number(payload.cacheGiB);
+  const cacheGiB =
+    Number.isFinite(cacheGiBRaw) && cacheGiBRaw > 0
+      ? Math.max(1, Math.round(cacheGiBRaw))
+      : 1;
+  const segments = Array.isArray(payload.segments) ? payload.segments : [];
+  const loudness = payload.loudness === "youtube" ? "youtube" : undefined;
+
+  const normalizedSegments = segments
+    .map((seg, index) => {
+      if (!seg || typeof seg !== "object") return null;
+      const item = seg as Record<string, unknown>;
+      const source =
+        item.source && typeof item.source === "object"
+          ? (item.source as Record<string, unknown>)
+          : null;
+      if (!source) return null;
+
+      const kind = source.kind;
+      const pathValue = source.path;
+      if (
+        (kind !== "video" && kind !== "sound") ||
+        typeof pathValue !== "string"
+      ) {
+        return null;
+      }
+
+      const toFrame = (value: unknown, fallback = 0) => {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return fallback;
+        return Math.max(0, Math.round(n));
+      };
+
+      const durationFrames = toFrame(item.durationFrames, 0);
+      if (durationFrames <= 0) return null;
+
+      const volumeRaw = Number(item.volume);
+      const volume = Number.isFinite(volumeRaw) ? Math.max(0, volumeRaw) : 1;
+
+      return {
+        id:
+          typeof item.id === "string" && item.id.length > 0
+            ? item.id
+            : `seg-${index}`,
+        source: { kind, path: pathValue },
+        projectStartFrame: toFrame(item.projectStartFrame, 0),
+        sourceStartFrame: toFrame(item.sourceStartFrame, 0),
+        durationFrames,
+        fadeInFrames: toFrame(item.fadeInFrames, 0),
+        fadeOutFrames: toFrame(item.fadeOutFrames, 0),
+        volume,
+      };
+    })
+    .filter((seg): seg is NonNullable<typeof seg> => seg != null);
+
+  await startBackend();
+  await waitForHealthz();
+
+  try {
+    await withRetry(() => postBackendJson("/reset"), 1);
+  } catch {
+    // keep going
+  }
+
+  await withRetry(
+    () =>
+      postBackendJson("/render_audio_plan", {
+        fps,
+        segments: normalizedSegments,
+        loudness,
+      }),
+    2,
+  );
+
+  try {
+    await withRetry(
+      () => postBackendJson("/set_cache_size", { gib: cacheGiB }),
+      1,
+    );
+  } catch {
+    // keep going
+  }
+
+  try {
+    await withRetry(
+      () =>
+        postBackendJson("/render_progress", {
+          completed: 0,
+          total: totalFrames,
+        }),
+      1,
+    );
+  } catch {
+    // keep going
+  }
+
+  return { ok: true as const };
+}
+
 function resolveRenderSettingsUrl() {
   if (useDevServer && process.env.VITE_DEV_SERVER_URL) {
     return `${process.env.VITE_DEV_SERVER_URL}/#/render-settings`;
@@ -237,7 +400,10 @@ function resolveRenderProgressUrl() {
   }
 
   const indexPath = path.join(__dirname, "../dist/index.html");
-  return { file: indexPath, hash: `render-progress?output=${outputParam}` } as const;
+  return {
+    file: indexPath,
+    hash: `render-progress?output=${outputParam}`,
+  } as const;
 }
 
 function resolveRenderPreloadPath() {
@@ -301,8 +467,16 @@ function startRenderProcess(payload: RenderStartPayload) {
       console.log(`[render] exited code=${code} signal=${signal}`);
       renderChild = null;
     });
-    console.log("[render] spawn (dev): cargo run --", argsString, "cwd=", renderCwd);
-    return { cmd: `render (cargo run) -- ${argsString}`, pid: renderChild?.pid };
+    console.log(
+      "[render] spawn (dev): cargo run --",
+      argsString,
+      "cwd=",
+      renderCwd,
+    );
+    return {
+      cmd: `render (cargo run) -- ${argsString}`,
+      pid: renderChild?.pid,
+    };
   } else {
     const { binPath, platformKey } = getRenderBinaryInfo();
 
@@ -310,7 +484,7 @@ function startRenderProcess(payload: RenderStartPayload) {
       const info = getRenderBinaryInfo();
       throw new Error(
         `Render binary not found for platform "${platformKey}". Tried:\n` +
-        info.candidates.map((p) => `- ${p}`).join("\n"),
+          info.candidates.map((p) => `- ${p}`).join("\n"),
       );
     }
 
@@ -459,15 +633,33 @@ function setupRenderIpc() {
       };
     }
     const info = getRenderBinaryInfo();
-    return { platform: info.platformKey, binPath: info.binPath, binName: info.binName, isDev: false };
+    return {
+      platform: info.platformKey,
+      binPath: info.binPath,
+      binName: info.binName,
+      isDev: false,
+    };
   });
 
   ipcMain.handle("render:getOutputPath", () => {
-    return { path: getRenderOutputPath(), displayPath: getRenderOutputDisplayPath() };
+    return {
+      path: getRenderOutputPath(),
+      displayPath: getRenderOutputDisplayPath(),
+    };
   });
 
   ipcMain.handle("render:openProgress", () => {
     createRenderProgressWindow();
+  });
+
+  ipcMain.handle("render:ensureBackend", async () => {
+    await startBackend();
+    await waitForHealthz();
+    return { ok: true as const };
+  });
+
+  ipcMain.handle("render:prepare", (_event, payload: RenderPreparePayload) => {
+    return prepareRender(payload);
   });
 
   ipcMain.handle("render:start", (_event, payload: RenderStartPayload) => {

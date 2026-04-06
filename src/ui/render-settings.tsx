@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { PROJECT_SETTINGS } from "../../project/project";
-import { PROJECT } from "../../project/project";
-import { StudioStateContext } from "../lib/studio-state";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { PROJECT, PROJECT_SETTINGS } from "../../project/project";
+import { useAudioSegments } from "../lib/audio-plan";
 import { WithCurrentFrame } from "../lib/frame";
+import { StudioStateContext } from "../lib/studio-state";
 import { useTimelineClips } from "../lib/timeline";
 import { Store } from "../util/state";
-import { useAudioSegments } from "../lib/audio-plan";
 
 const presets = ["medium", "slow", "fast"];
 const encodeOptions = [
@@ -60,7 +66,9 @@ export const RenderSettingsPage = () => {
   const [width, setWidth] = useState(PROJECT_SETTINGS.width ?? 1920);
   const [height, setHeight] = useState(PROJECT_SETTINGS.height ?? 1080);
   const [fps, setFps] = useState(PROJECT_SETTINGS.fps ?? 60);
-  const [frames, setFrames] = useState(Math.round((PROJECT_SETTINGS.fps ?? 60) * 5));
+  const [frames, setFrames] = useState(
+    Math.round((PROJECT_SETTINGS.fps ?? 60) * 5),
+  );
   const [workers, setWorkers] = useState(() => {
     if (typeof navigator !== "undefined" && navigator.hardwareConcurrency) {
       return Math.max(1, navigator.hardwareConcurrency / 2);
@@ -82,7 +90,17 @@ export const RenderSettingsPage = () => {
 
   const commandPreview = useMemo(() => {
     return `${width}:${height}:${fps}:${frames}:${workers}:${encode}:${preset}:${ffmpegThreads}:${ffmpegLowMemory ? 1 : 0}`;
-  }, [width, height, fps, frames, workers, encode, preset, ffmpegThreads, ffmpegLowMemory]);
+  }, [
+    width,
+    height,
+    fps,
+    frames,
+    workers,
+    encode,
+    preset,
+    ffmpegThreads,
+    ffmpegLowMemory,
+  ]);
 
   const commandLineText = useMemo(() => {
     if (isDevMode) {
@@ -95,7 +113,9 @@ export const RenderSettingsPage = () => {
     const marker = "/frame-script/";
     const idx = normalized.lastIndexOf(marker);
     const displayPath =
-      idx >= 0 ? `frame-script/${normalized.slice(idx + marker.length)}` : platformBinPath;
+      idx >= 0
+        ? `frame-script/${normalized.slice(idx + marker.length)}`
+        : platformBinPath;
     return `${displayPath} ${commandPreview}`;
   }, [commandPreview, platformBinPath, platformLabel, isDevMode]);
 
@@ -135,51 +155,41 @@ export const RenderSettingsPage = () => {
     setBusy(true);
     setStatus(null);
     try {
-      try {
-        await fetch("http://127.0.0.1:3000/reset", {
-          method: "POST",
-        });
-      } catch (_error) {
-        // ignore; still try to start render
+      if (audioSegments.length === 0) {
+        setStatus(
+          "Warning: No audio segments detected. If your project should contain BGM, wait a moment and retry.",
+        );
       }
+
+      const preparePayload: {
+        fps: number;
+        segments: typeof audioSegments;
+        loudness?: "youtube";
+        cacheGiB: number;
+        totalFrames: number;
+      } = {
+        fps: Number(fps),
+        segments: audioSegments,
+        cacheGiB: Number(cacheGiB),
+        totalFrames: Number(frames),
+      };
+      if (loudness === "youtube") {
+        preparePayload.loudness = "youtube";
+      }
+
       try {
-        const audioPlanPayload: {
-          fps: number;
-          segments: typeof audioSegments;
-          loudness?: "youtube";
-        } = {
-          fps: Number(fps),
-          segments: audioSegments,
-        };
-        if (loudness === "youtube") {
-          audioPlanPayload.loudness = "youtube";
+        if (window.renderAPI.prepareRender) {
+          await window.renderAPI.prepareRender(preparePayload);
+        } else if (window.renderAPI.ensureBackend) {
+          await window.renderAPI.ensureBackend();
         }
-        await fetch("http://127.0.0.1:3000/render_audio_plan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(audioPlanPayload),
-        });
-      } catch (_error) {
-        // ignore; still try to start render
+      } catch (error) {
+        if (error instanceof Error) {
+          throw new Error(`Audio plan setup failed. ${error.message}`);
+        }
+        throw new Error("Audio plan setup failed.");
       }
-      try {
-        await fetch("http://127.0.0.1:3000/set_cache_size", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gib: Number(cacheGiB) }),
-        });
-      } catch (_error) {
-        // ignore; still try to start render
-      }
-      try {
-        await fetch("http://127.0.0.1:3000/render_progress", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ completed: 0, total: Number(frames) }),
-        });
-      } catch (_error) {
-        // ignore
-      }
+
       const result = await window.renderAPI.startRender({
         width: Number(width),
         height: Number(height),
@@ -193,7 +203,9 @@ export const RenderSettingsPage = () => {
       });
       void window.renderAPI?.openProgress();
       window.close();
-      setStatus(`Spawned: ${result.cmd}${result.pid ? ` (pid=${result.pid})` : ""}`);
+      setStatus(
+        `Spawned: ${result.cmd}${result.pid ? ` (pid=${result.pid})` : ""}`,
+      );
     } catch (error: unknown) {
       console.error(error);
       if (error instanceof Error) {
@@ -214,7 +226,13 @@ export const RenderSettingsPage = () => {
         {`Assemble arguments passed to bin/${platformLabel}/render.`}
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: 12,
+        }}
+      >
         <div style={fieldStyle}>
           <label style={{ fontSize: 12, color: "#cbd5e1" }}>Width (px)</label>
           <input
@@ -267,7 +285,11 @@ export const RenderSettingsPage = () => {
         </div>
         <div style={fieldStyle}>
           <label style={{ fontSize: 12, color: "#cbd5e1" }}>Preset</label>
-          <select value={preset} onChange={(e) => setPreset(e.target.value)} style={{ ...inputStyle, padding: "10px 10px" }}>
+          <select
+            value={preset}
+            onChange={(e) => setPreset(e.target.value)}
+            style={{ ...inputStyle, padding: "10px 10px" }}
+          >
             {presets.map((p) => (
               <option key={p} value={p}>
                 {p}
@@ -276,7 +298,9 @@ export const RenderSettingsPage = () => {
           </select>
         </div>
         <div style={fieldStyle}>
-          <label style={{ fontSize: 12, color: "#cbd5e1" }}>Cache size (GiB)</label>
+          <label style={{ fontSize: 12, color: "#cbd5e1" }}>
+            Cache size (GiB)
+          </label>
           <input
             type="number"
             min={1}
@@ -287,7 +311,9 @@ export const RenderSettingsPage = () => {
           />
         </div>
         <div style={fieldStyle}>
-          <label style={{ fontSize: 12, color: "#cbd5e1" }}>FFmpeg threads</label>
+          <label style={{ fontSize: 12, color: "#cbd5e1" }}>
+            FFmpeg threads
+          </label>
           <input
             type="number"
             min={1}
@@ -298,7 +324,14 @@ export const RenderSettingsPage = () => {
         </div>
       </div>
 
-      <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div
+        style={{
+          marginTop: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
         <div style={sectionStyle}>
           <div style={sectionTitleStyle}>Encoding</div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -312,7 +345,10 @@ export const RenderSettingsPage = () => {
                   padding: "10px 12px",
                   borderRadius: 10,
                   border: "1px solid #1f2a3c",
-                  background: encode === option.value ? "linear-gradient(90deg, #1f2937, #0f172a)" : "#0f172a",
+                  background:
+                    encode === option.value
+                      ? "linear-gradient(90deg, #1f2937, #0f172a)"
+                      : "#0f172a",
                   cursor: "pointer",
                   userSelect: "none",
                 }}
@@ -365,7 +401,10 @@ export const RenderSettingsPage = () => {
                   padding: "10px 12px",
                   borderRadius: 10,
                   border: "1px solid #1f2a3c",
-                  background: loudness === option.value ? "linear-gradient(90deg, #1f2937, #0f172a)" : "#0f172a",
+                  background:
+                    loudness === option.value
+                      ? "linear-gradient(90deg, #1f2937, #0f172a)"
+                      : "#0f172a",
                   cursor: "pointer",
                   userSelect: "none",
                   minWidth: 200,
@@ -375,12 +414,22 @@ export const RenderSettingsPage = () => {
                   type="radio"
                   value={option.value}
                   checked={loudness === option.value}
-                  onChange={() => setLoudness(option.value as "off" | "youtube")}
+                  onChange={() =>
+                    setLoudness(option.value as "off" | "youtube")
+                  }
                   style={{ accentColor: "#5bd5ff" }}
                 />
-                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#e5e7eb" }}>{option.label}</span>
-                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{option.help}</span>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 2 }}
+                >
+                  <span
+                    style={{ fontSize: 12, fontWeight: 600, color: "#e5e7eb" }}
+                  >
+                    {option.label}
+                  </span>
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>
+                    {option.help}
+                  </span>
                 </div>
               </label>
             ))}
@@ -395,13 +444,21 @@ export const RenderSettingsPage = () => {
             border: "1px solid #1f2a3c",
             borderRadius: 8,
             padding: "10px 12px",
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+            fontFamily:
+              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
           }}
         >
           {commandLineText}
         </div>
 
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "flex-end",
+            marginTop: 8,
+          }}
+        >
           <button
             type="button"
             onClick={() => window.close()}
@@ -455,7 +512,11 @@ export const RenderSettingsPage = () => {
   );
 };
 
-const HiddenTimelineDurationProbe = ({ onDuration }: { onDuration: (frames: number) => void }) => {
+const HiddenTimelineDurationProbe = ({
+  onDuration,
+}: {
+  onDuration: (frames: number) => void;
+}) => {
   const clips = useTimelineClips();
   const lastSent = useRef(0);
 
@@ -478,7 +539,9 @@ const HiddenTimelineDurationProbe = ({ onDuration }: { onDuration: (frames: numb
         isPlaying: false,
         setIsPlaying,
         isPlayingStore: dummyStoreRef.current,
-        isRender: false,
+        // Render mode makes <Sound> resolve duration synchronously,
+        // avoiding a race where audio plan can be empty right after opening this page.
+        isRender: true,
       }}
     >
       <WithCurrentFrame>

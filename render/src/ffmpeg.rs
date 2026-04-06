@@ -348,8 +348,10 @@ pub async fn mux_audio_plan_into_mp4(
     let fmt_f = |value: f64| format!("{:.6}", value.max(0.0));
 
     // Base silent bed so output audio always starts at 0 and has deterministic duration.
+    // `anullsrc` duration option support differs across ffmpeg builds, so keep it portable
+    // by trimming a continuous source with `atrim`.
     filter_parts.push(format!(
-        "anullsrc=r=48000:cl=stereo:d={}[base]",
+        "anullsrc=r=48000:cl=stereo,atrim=start=0:duration={},asetpts=PTS-STARTPTS[base]",
         fmt_f(duration_sec)
     ));
 
@@ -410,7 +412,8 @@ pub async fn mux_audio_plan_into_mp4(
             ));
         }
 
-        chain.push_str(&format!(",adelay={delay_ms}:all=1[a{n}]"));
+        // Older ffmpeg builds do not support `all=1`, so delay both stereo channels explicitly.
+        chain.push_str(&format!(",adelay={delay_ms}|{delay_ms}[a{n}]"));
         filter_parts.push(chain);
 
         segment_labels.push(format!("[a{n}]"));
@@ -427,7 +430,7 @@ pub async fn mux_audio_plan_into_mp4(
 
     let total_inputs = 1 + seg_count;
     let mut mix_chain = format!(
-        "{mix_inputs}amix=inputs={total_inputs}:duration=first:normalize=0,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo"
+        "{mix_inputs}amix=inputs={total_inputs}:duration=first,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo"
     );
     if matches!(plan.loudness, Some(AudioLoudnessPreset::Youtube)) {
         mix_chain.push_str(",loudnorm=I=-14:TP=-1:LRA=11");
