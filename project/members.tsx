@@ -8,9 +8,9 @@ export const MembersScene = () => {
   const progress = useVariable(0);
   const currentProgress = progress.use();
   const cohortData = [
-    { label: "9期", count: 47, color: "#8bd3ff" },
-    { label: "8期", count: 16, color: "#c2e7ff" },
-    { label: "7期以降", count: 9, color: "#e3f6ff" },
+    { label: "2年生", count: 47, color: "#8bd3ff" },
+    { label: "3年生", count: 16, color: "#c2e7ff" },
+    { label: "4年生以上", count: 9, color: "#e3f6ff" },
   ];
   const maxCount = Math.max(...cohortData.map((item) => item.count));
 
@@ -65,7 +65,8 @@ export const MembersScene = () => {
               width: "1360px",
               borderRadius: "16px",
               border: "1px solid rgba(255, 255, 255, 0.2)",
-              background: "linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))",
+              background:
+                "linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))",
               boxShadow: "0 16px 30px rgba(0, 0, 0, 0.28)",
               padding: "28px 34px",
               display: "flex",
@@ -125,8 +126,18 @@ export const MembersScene = () => {
                       boxSizing: "border-box",
                     }}
                   >
-                    <span style={{ fontSize: "44px", fontWeight: "bold", whiteSpace: "nowrap" }}>{item.label}</span>
-                    <span style={{ fontSize: "34px", color: "#d3ecff" }}>{item.count}人</span>
+                    <span
+                      style={{
+                        fontSize: "44px",
+                        fontWeight: "bold",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {item.label}
+                    </span>
+                    <span style={{ fontSize: "34px", color: "#d3ecff" }}>
+                      {item.count}人
+                    </span>
                   </div>
                 </div>
               );
